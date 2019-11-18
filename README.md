@@ -44,6 +44,8 @@ The typical simulation process follows four steps.
 ## 3. Postprocessing Module
 
 ## Output File
+- deformedCoordinates(nNodes , NOD)
+- fail (nBonds , 1)
 
 ## Speed Testing
 
