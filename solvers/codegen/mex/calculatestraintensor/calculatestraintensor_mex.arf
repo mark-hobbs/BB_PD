@@ -1,0 +1,17 @@
+libemlrt.lib
+libcovrt.lib
+libut.lib
+libmwmathutil.lib
+libiomp5md.lib
+/export:mexFunction
+/export:mexfilerequiredapiversion
+/export:emlrtMexFcnProperties
+/export:calculatestraintensor
+/export:emlrtGetRootTLSGlobal
+/export:emlrtLockerFunction
+/export:emxEnsureCapacity_real_T
+/export:emxFree_real_T
+/export:emxInit_real_T
+/export:calculatestraintensor_initialize
+/export:calculatestraintensor_terminate
+/export:calculatestraintensor_atexit

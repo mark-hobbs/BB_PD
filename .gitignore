@@ -1,0 +1,7 @@
+# Ignore files defined in this file
+testing/
+# output/
+
+# Ignore large input files > 100,000KB
+input/inputdatafiles/A1fine.mat
+input/inputdatafiles/C2_b.mat

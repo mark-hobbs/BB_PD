@@ -1,0 +1,48 @@
+# CompilerName=msvc150
+# Mode=optim
+ninja_required_version = 1.3
+
+# Basic folders
+root = .
+builddir = $root\build\win64
+matlabdir = C:\Program Files\MATLAB\R2019a
+startdir = D:\PhD\2 Code\2.1 PhD Code\BB_PD\solvers
+
+# Toolchain information
+cc = cl
+cxx = cl
+linker = link
+linkerxx = link
+
+cflags =  /c /Zp8 /GR /W3 /EHs /nologo /MD /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0   /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE /O2 /Oy- /DNDEBUG /fp:strict /I "$root" /I "$startdir" /I "$root\interface" /I "$matlabdir\extern\include" /I "."   
+
+cxxflags =   /c /Zp8 /GR /W3 /EHs /nologo /MD /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0   /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE /O2 /Oy- /DNDEBUG /fp:strict /I "$root" /I "$startdir" /I "$root\interface" /I "$matlabdir\extern\include" /I "."   
+
+ldflags =  /nologo /manifest   /DLL /LIBPATH:"$matlabdir\extern\lib\win64\microsoft" libmx.lib libmex.lib libmat.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  /out:"calculatedeformedlength_mex.mexw64"  @calculatedeformedlength_mex.arf
+
+# Build Rules
+rule cc
+    command = $cc $cflags $in /Fo$out
+
+rule cxx
+    command = $cxx $cxxflags $in /Fo$out
+
+rule link
+    command = $linker $in $ldflags
+
+rule linkxx
+    command = $linkerxx $in $ldflags
+
+# Build
+build $builddir\calculatedeformedlength_data.obj : cc $root\calculatedeformedlength_data.c
+build $builddir\calculatedeformedlength_initialize.obj : cc $root\calculatedeformedlength_initialize.c
+build $builddir\calculatedeformedlength_terminate.obj : cc $root\calculatedeformedlength_terminate.c
+build $builddir\calculatedeformedlength.obj : cc $root\calculatedeformedlength.c
+build $builddir\_coder_calculatedeformedlength_info.obj : cc $root\interface\_coder_calculatedeformedlength_info.c
+build $builddir\_coder_calculatedeformedlength_api.obj : cc $root\interface\_coder_calculatedeformedlength_api.c
+build $builddir\_coder_calculatedeformedlength_mex.obj : cc $root\interface\_coder_calculatedeformedlength_mex.c
+build $builddir\calculatedeformedlength_emxutil.obj : cc $root\calculatedeformedlength_emxutil.c
+build $builddir\c_mexapi_version.obj : cc $matlabdir\extern\version\c_mexapi_version.c
+
+# Link
+build $root\calculatedeformedlength_mex.mexw64 : link $builddir\calculatedeformedlength_data.obj $builddir\calculatedeformedlength_initialize.obj $builddir\calculatedeformedlength_terminate.obj $builddir\calculatedeformedlength.obj $builddir\_coder_calculatedeformedlength_info.obj $builddir\_coder_calculatedeformedlength_api.obj $builddir\_coder_calculatedeformedlength_mex.obj $builddir\calculatedeformedlength_emxutil.obj $builddir\c_mexapi_version.obj 
