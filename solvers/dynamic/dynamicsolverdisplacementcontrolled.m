@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail,stretch,nodalDisplacementHistoryReduced,reactionForceHistory] = dynamicsolverdisplacementcontrolled(inputdatafilename,config)
+function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename,config)
 % -------------------------------------------------------------------------
 % Dynamic Solver Displacement Controlled
 % -------------------------------------------------------------------------
@@ -52,6 +52,7 @@ frameCounter = 0;
 figure
 nTimeSteps = 100000;
 finalDisplacement = -3e-3;
+frequency = 200; 
 
 % randomNumbers = 0.8 + (1.2 - 0.8) .* rand(nBonds,1);
 % for i = 1 : nBonds
@@ -112,25 +113,36 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % Save variable history
     % strainEnergyHistory(iTimeStep,1) = strainEnergy;
     % nodalDisplacementHistory(iTimeStep,1) = nodalDisplacement(1500,3);
+    
+    % Calculate reaction force
+    reactionForce = calculatereactionforceFast(nodalForce, BODYFORCEFLAG, DX); % TODO: introduce frequency
+    
+    % Print output to text file
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(87,3), fail, flagBondSoftening, flagBondYield);
+    
+    % Save output variables
+    
+    
+    % Save damage plot 
      
     % Determine reaction force and output load-displacement graph
-    if mod(iTimeStep, 200) == 0
-        
-        frameCounter = frameCounter + 1;
-        reactionForce = nodalForce(:,3) .* DX^3;                    % convert nodal force to newtons
-        reactionForce(BODYFORCEFLAG(:,3) == 0) = 0;                 % determine reaction force at nodes with applied displacements (this line discards the values of nodes with no applied displacement)
-        reactionForceHistory(frameCounter,1) = sum(reactionForce);  % sum all values to determine the total reaction force
-        nodalDisplacementHistoryReduced(frameCounter,1) = nodalDisplacement(87,3);
-        % plot(nodalDisplacementHistoryReduced, reactionForceHistory)
-                
-        damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-        plotnodaldata(undeformedCoordinates, nodalDisplacement, damage, 'Damage');
-        drawnow
-        % createGIF('B1_2D.gif',frameCounter)
-        
-        fprintf('Time Step: %.0f \t Reaction Force: %.3fN \t Displacement: %.3fmm\n', iTimeStep, reactionForceHistory(frameCounter,1), nodalDisplacement(87,3)*1000)
-        
-    end
+%     if mod(iTimeStep, 200) == 0
+%         
+%         frameCounter = frameCounter + 1;
+%         
+%         reactionForceHistory(frameCounter,1) = sum(reactionForce);  
+%         nodalDisplacementHistoryReduced(frameCounter,1) = nodalDisplacement(87,3);
+%         % plot(nodalDisplacementHistoryReduced, reactionForceHistory)
+%                 
+%         damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
+%         plotnodaldata(undeformedCoordinates, nodalDisplacement, damage, 'Damage');
+%         drawnow
+%         % createGIF('B1_2D.gif',frameCounter)
+%         
+%         % fprintf('Time Step: %.0f \t Reaction Force: %.3fN \t Displacement: %.3fmm\n', iTimeStep, reactionForceHistory(frameCounter,1), nodalDisplacement(87,3)*1000)
+%         
+%     end
+    
             
 end
 

@@ -13,8 +13,8 @@
 % Find the full path of the output folder located within the BB_PD root
 % directory. 'what' is a built-in matlab function that will locate any
 % folder on the matlab search path and return its contents.
-outputFolderContentList=what('BB_PD/Output'); 
-outputFolderPath=outputFolderContentList.path;
+outputFolderContentList = what('BB_PD/output'); 
+outputFolderPath = outputFolderContentList.path;
 %pointLoad=-MAXBODYFORCE*bodyforceCounter*VOLUME*bodyforceMultiplier;
 %outputDestination=strcat(pwd,'/Output/'); % Determine output destination folder
 

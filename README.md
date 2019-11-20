@@ -1,4 +1,4 @@
- # BB_PD - master branch
+ # BB_PD
 BB_PD is a bond based peridynamic analysis code written in MATLAB. This code has been developed primarily for the analysis of reinforced concrete members but extension to other fracture problems is possible.
 To see the code in action, simply download the code and edit the configuaration file to accept the desired test problem and run. See 'Tests' for a list of currently available test problems. 
 
@@ -43,7 +43,16 @@ The typical simulation process follows four steps.
 
 ## 3. Postprocessing Module
 
-## Output File
+## Output Files
+An output file is created that logs all text output to the command window. This is formatted to ouput the following variables every
+x number of time steps.
+- Time Step
+- Reaction Force (kN)
+- Displacement (mm), user specifies the target node for measurement
+- Energy balance 
+
+A python script is provided for parsing the text file and extracting the data in a format suitable for plotting.
+
 - deformedCoordinates(nNodes , NOD)
 - fail (nBonds , 1)
 

@@ -1,8 +1,24 @@
-% -------------------------------------------------------------------------
-% Process Results
-% -------------------------------------------------------------------------
+function processresults(outputfile)
+% processresults - load output file and process results
+% 1. Plot deformed member
+% 2. Calculate and plot damage for every node
+% 3. Plot the fracture path
+% 4. Plot bond stretch
+% 5. Plot strain
+% 6. Plot stress
+%
+% Syntax: processresults(outputfile)
+%
+% Mark Hobbs 
+% mch61@cam.ac.uk
+% Department of Engineering
+% Cambridge University
+% November 2019
 
-%% Load required data
+% ---------------------------- BEGIN CODE ---------------------------------
+
+%% Load required data and set-up variables
+load(outputfile)
 load(inputdatafilename)
 
 nodalDisplacement = deformedCoordinates - undeformedCoordinates;
@@ -19,8 +35,7 @@ plotfracturepath(undeformedCoordinates, deformedCoordinates, damage, 0, 1, 25)
 
 %% Bond Stretch - plot stretch of every bond 
 % TODO: seperate calculation of max stretch etc and plotnodaldata()
-disp = deformedCoordinates - undeformedCoordinates;
-plotstretch(nNodes, stretch, BONDLIST, undeformedCoordinates, disp);    
+plotstretch(nNodes, stretch, BONDLIST, undeformedCoordinates, nodalDisplacement);    
 
 %% Strain - calculate and plot strain tensor at every node
 strainTensor = calculatestraintensor(undeformedCoordinates,deformedCoordinates,BONDLIST,fail,damage);
@@ -38,3 +53,7 @@ str1 = sprintf('Shear Force Diagram, average shear force V_{average} = %.0fN', a
 title(str1)
 xlabel('x axis (m)')
 ylabel('Shear Force V (N)')
+
+% ----------------------------- END CODE ----------------------------------
+
+end
