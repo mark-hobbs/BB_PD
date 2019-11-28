@@ -1,4 +1,4 @@
-% This scipt saves the workspace with a unique file name. The file name
+% This script saves the workspace with a unique file name. The file name
 % should have a unique job ID, the date, the applied load, problem type
 % (cantilever with point load etc), job name. Code based on following
 % answer:-

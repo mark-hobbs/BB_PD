@@ -1,7 +1,5 @@
-function[] = plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX)
+function[] = plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX, dsf, sz)
 
-dsf = 1;        % Displacement scale factor
-sz = 10;         % Point size - size of plotted point in figure
 nodalDisplacement = deformedCoordinates - undeformedCoordinates;
 
 %% 3D view - Bond damage

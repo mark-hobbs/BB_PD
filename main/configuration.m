@@ -33,7 +33,7 @@ config.solver = 'dynamic';
 % -------------------------------------------------------------------------
 
 % Failure functionality (on/off)
-config.failureFunctionality = 'off';
+config.failureFunctionality = 'on';
 
 % Loading method (loadControlled/displacementControlled)
 config.loadingMethod = 'displacementControlled';

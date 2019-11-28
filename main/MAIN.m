@@ -80,7 +80,7 @@ if strcmp(config.solver,'dynamic')
         % -----------------------------------------------------------------
 
         fprintf('Start dynamic solver: displacement-controlled \n')
-        [deformedCoordinates,fail,stretch,nodalDisplacementHistoryReduced,reactionForceHistory] = dynamicsolverdisplacementcontrolled(inputdatafilename,config);
+        [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename,config);
 
     end
                
@@ -97,6 +97,8 @@ elseif strcmp(config.solver,'static')
         % Static Displacement-Controlled
         % -----------------------------------------------------------------
 end
+
+diary off
 
 %% Module 3: Process Results
 % outputFileName = fullfile(outputFolderPath, 'testing.mat');

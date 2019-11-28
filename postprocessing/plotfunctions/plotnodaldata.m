@@ -1,4 +1,4 @@
-function [] = plotnodaldata(undeformedCoordinates,nodalDisplacement,nodalData,datalabel)
+function [] = plotnodaldata(undeformedCoordinates,nodalDisplacement,nodalData,datalabel,sz,dsf)
 % plotnodaldata - plot nodal data on deformed shape. This functions plots a
 % 4-D figure. The 4th dimension is color coded to represent the value of a
 % variable at a point in 3-D space
@@ -10,6 +10,8 @@ function [] = plotnodaldata(undeformedCoordinates,nodalDisplacement,nodalData,da
 %   nodalDisplacement     - displacement vector for every node (nNodes x NOD)
 %   nodalData             - the 4th dimension (nodal data could be damage, stress, etc)
 %   datalabel             - title of output figure
+%   sz                    - marker size
+%   dsf                   - displacement scale factor
 %
 % Outputs:
 %   figure                - output 4-D figure with nodal data plot on deformed nodes
@@ -29,8 +31,6 @@ function [] = plotnodaldata(undeformedCoordinates,nodalDisplacement,nodalData,da
 % ----------------------- BEGIN CODE --------------------------------------
 
 NOD = size(undeformedCoordinates,2);
-sz = 10;   % Marker size
-dsf = 10;  % Displacement scale factor
 
 if NOD == 2
     

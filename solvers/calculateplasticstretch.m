@@ -1,4 +1,4 @@
-function [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength)
+function [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength)
 % calculateplasticstretch - calculate and track the plastic stretch history
 % of a bond that has exceeded the critical yield stretch value (only for
 % steel-steel bonds)

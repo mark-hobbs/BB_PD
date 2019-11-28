@@ -17,7 +17,6 @@ function [] = printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement
 %   damageEnergy        -   
 %   
 % 
-%
 % Outputs:
 %
 %
@@ -40,8 +39,12 @@ if mod(iTimeStep, frequency) == 0
     sumFail = size(fail,1) - sum(fail);
     sumFBS = sum(flagBondSoftening);
     sumFBY = sum(flagBondYield);
-
-    % | Time Step | Reaction Force (N) | Displacement (mm) | Damage | Concrete Softening | Steel Yielding | Kinetic Energy | Strain Energy | Damage Energy |
+    nodalDisplacement = nodalDisplacement * 1000; % convert from m to mm
+    
+    % | Time Step | Reaction Force (N) | Displacement (mm) | .... 
+    % | Damage | Concrete Softening | Interface Softening | Steel Yielding | ...
+    % | Max Stretch Concrete | Max Stretch Interface | Max Stretch Steel | ...
+    % | Kinetic Energy | Strain Energy | Damage Energy | ...
 
     fprintf('%.0f \t %.3f \t %.3f \t %.0f \t %.0f \t %.0f \n', iTimeStep, reactionForce, nodalDisplacement, sumFail, sumFBS, sumFBY)
 

@@ -27,6 +27,27 @@ function [] = calculatecontactforce()
 
 % ---------------------------- BEGIN CODE ---------------------------------
 
+% pseudo - code
+% 1. create penetrator
+%   1.1 - define centre (x,y,z)
+%   1.2 - define radius
+%   1.3 - determine penetrator family
+%
+% 2. Move penetrator
+%
+% 3. Calculate new nodal positions
+%   3.1 - calculate distance between penetrator centre and nodes in
+%   penetrator family
+%   3.2 - check if a node lies within the radius of the penetrator 
+%   3.3a - YES: calculate new nodal position
+%   3.3b - NO: break out of if statement
+%
+% 4. Update velocity
+%
+% 5. Calculate the reaction force on the penetrator
+%
+% 6. Update penetrator acceleration, velocity, and displacement
+
 % Code copied from 2D problem
 
 penetratorfx = 0; % penetrator contact force in x-direction 

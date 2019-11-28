@@ -1,4 +1,4 @@
-function [nodalDisplacementForward,nodalVelocityForward,deformedCoordinates,nodalDisplacementDT] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,loadingMethod,displacementIncrement,displacementIncrementPrevious)
+function [nodalDisplacementForward,nodalVelocityForward,deformedCoordinates,nodalDisplacementDT] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,loadingMethod,displacementIncrement)
 % timeintegrationeulercromer - Time integration using Euler-Cromer algorithm
 % See https://www.compadre.org/PICUP/resources/Numerical-Integration/ for
 % info on the Euler-Cromer algorithm and other methods for integrating
@@ -57,8 +57,19 @@ nodalDisplacementForward(:,:) = nodalDisplacement(:,:) + nodalDisplacementDT(:,:
 
 deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacementForward(:,:);             % Deformed coordinates of all nodes
 
-% ------------------------ END CODE ---------------------------------------
+% --------------
+% Optimised Code
+% --------------
 
+% nodalAcceleration(:,:) = (nodalForce(:,:) - DAMPING * nodalVelocity(:,:)) ./ DENSITY(:,:);                      % Acceleration for time:-   tt
+% 
+% nodalAcceleration(CONSTRAINTFLAG == 1) = 0;                                                                     % Apply boundary conditions - constraints
+% 
+% nodalVelocity(:,:) = nodalVelocity(:,:) + (nodalAcceleration(:,:) * DT);                                        % Velocity for time:-       tt + 1dt
+% 
+% deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:) +  (nodalVelocity(:,:) * DT);    % Deformed coordinates of all nodes
+
+% ------------------------ END CODE ---------------------------------------
 
 end
 

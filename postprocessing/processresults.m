@@ -1,4 +1,4 @@
-function processresults(outputfile)
+function processresults(outputfile,inputdatafilename)
 % processresults - load output file and process results
 % 1. Plot deformed member
 % 2. Calculate and plot damage for every node
@@ -35,7 +35,7 @@ plotfracturepath(undeformedCoordinates, deformedCoordinates, damage, 0, 1, 25)
 
 %% Bond Stretch - plot stretch of every bond 
 % TODO: seperate calculation of max stretch etc and plotnodaldata()
-plotstretch(nNodes, stretch, BONDLIST, undeformedCoordinates, nodalDisplacement);    
+% plotstretch(nNodes, stretch, BONDLIST, undeformedCoordinates, nodalDisplacement);    
 
 %% Strain - calculate and plot strain tensor at every node
 strainTensor = calculatestraintensor(undeformedCoordinates,deformedCoordinates,BONDLIST,fail,damage);

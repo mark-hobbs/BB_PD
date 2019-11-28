@@ -19,27 +19,13 @@ function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputd
 load(inputdatafilename, config.dynamicsolverinputlist{:});
 
 %% Initialise constants and empty arrays
-MAXBODYFORCE = 0; % function calculatenodalforce requires this input
+arraypreallocation
 
-% TODO create a seperate function or script for this
-nBonds = size(BONDLIST,1);
-nNodes = size(undeformedCoordinates,1);
-NOD = size(undeformedCoordinates,2);
+MAXBODYFORCE = 0; % function calculatenodalforce requires this input
 deformedCoordinates = undeformedCoordinates; % At t = 0, deformedCoordinates = undeformedCoordinates
-deformedX = zeros(nBonds,1);
-deformedY = zeros(nBonds,1);
-deformedZ = zeros(nBonds,1);
-fail = zeros(nBonds,1) + 1;
-nodalForce = zeros(nNodes,NOD);
-% nodalForcePrevious = zeros(nNodes,NOD);
-nodalDisplacement = zeros(nNodes,NOD);
-% nodalVelocityPreviousHalf = zeros(nNodes,NOD);
-nodalVelocity = zeros(nNodes,NOD);
-% nodalVelocityForwardHalf = zeros(nNodes,NOD);
-yieldingLength = zeros(nBonds,1);
-flagBondYield = zeros(nBonds,1);
-flagBondSoftening = zeros(nBonds,1);
-bondSofteningFactor = zeros(nBonds,1);
+nTimeSteps = 100000;
+finalDisplacement = -3e-3;
+frequency = 200;
 
 %% Configuring dynamic solver
 
@@ -47,12 +33,9 @@ dynamicsolverconfiguration
 
 %% Dynamic solver: displacement-controlled
 
+printoutputheader();
+
 tic
-frameCounter = 0;
-figure
-nTimeSteps = 100000;
-finalDisplacement = -3e-3;
-frequency = 200; 
 
 % randomNumbers = 0.8 + (1.2 - 0.8) .* rand(nBonds,1);
 % for i = 1 : nBonds
@@ -70,19 +53,19 @@ for iTimeStep = timeStepTracker : nTimeSteps
 
     timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
     
-    % Use a smooth amplitude curve to define the displacement increment at every time step 
+    % Use a smooth amplitude curve to define the displacement increment at every time step
     displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, finalDisplacement);
-
+    
     % Apply displacement boundary condition - DO!!!!
-    nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;    % Apply boundary conditions - applied displacement
+    nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
     deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
     
     % Calculate deformed length of every bond
-    [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,deformedZ,nBonds,BONDLIST);
+    [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
     
     % Calculate plastic stretch for steel-steel bonds
-    [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
-   
+    [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
+    
     % Calculate bond softening factor for bilinear material model
     [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch,linearElasticLimit,criticalStretchConcrete,flagBondSoftening,bondSofteningFactor,BONDTYPE);
     
@@ -90,16 +73,16 @@ for iTimeStep = timeStepTracker : nTimeSteps
     [fail] = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
     
     % Calculate bond force for every bond
-    [bForceX,bForceY,bForceZ] = calculatebondforces(fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
-
+    [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
+    
     % Calculate nodal force for every node
     [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,MAXBODYFORCE);
-
+    
     % Adaptively calculate the damping coefficient
     % [cn] = calculatedampingcoefficient(nodalForce, massVector, nodalForcePrevious, DT, nodalVelocityPreviousHalf, nodalDisplacement);
 
-    % Time integration 
-    [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement);
+    % Time integration
+    [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement);    
     % [nodalDisplacement, nodalVelocityForwardHalf] = timeintegrationADR(iTimeStep, DT, nodalVelocityForwardHalf, nodalForce, massVector, cn, nodalVelocityPreviousHalf, nodalDisplacement, CONSTRAINTFLAG);
     % Where are constraint flags applied? ^^^^^^
     
@@ -120,29 +103,13 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % Print output to text file
     printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(87,3), fail, flagBondSoftening, flagBondYield);
     
-    % Save output variables
+    % Save output variables for postprocessing
+    % savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail);
     
+    % Save damage figure
+    savedamagefigure(iTimeStep,1000,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
     
-    % Save damage plot 
-     
-    % Determine reaction force and output load-displacement graph
-%     if mod(iTimeStep, 200) == 0
-%         
-%         frameCounter = frameCounter + 1;
-%         
-%         reactionForceHistory(frameCounter,1) = sum(reactionForce);  
-%         nodalDisplacementHistoryReduced(frameCounter,1) = nodalDisplacement(87,3);
-%         % plot(nodalDisplacementHistoryReduced, reactionForceHistory)
-%                 
-%         damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-%         plotnodaldata(undeformedCoordinates, nodalDisplacement, damage, 'Damage');
-%         drawnow
-%         % createGIF('B1_2D.gif',frameCounter)
-%         
-%         % fprintf('Time Step: %.0f \t Reaction Force: %.3fN \t Displacement: %.3fmm\n', iTimeStep, reactionForceHistory(frameCounter,1), nodalDisplacement(87,3)*1000)
-%         
-%     end
-    
+    % Save checkpoint file   
             
 end
 

@@ -15,7 +15,7 @@
 
 NOD = 3;    % Number of degrees of freedom
 
-length = 3;     % x-axis (m)
+length = 1.45;     % x-axis (m)
 width = 0.15;   % y-axis (m)
 depth = 0.3;    % z-axis (m)
 

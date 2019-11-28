@@ -5,7 +5,7 @@ function [damage] = calculatedamage(bondlist, fail, nFAMILYMEMBERS)
 % Syntax: [damage] = calculatedamage(bondlist,fail,nFAMILYMEMBERS)
 %
 % Inputs:
-%   input1  - 
+%   input1 -
 % 
 %
 % Outputs:

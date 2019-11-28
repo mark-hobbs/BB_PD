@@ -1,9 +1,9 @@
-function [bForceX,bForceY,bForceZ] = calculatebondforces(fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor)
+function [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor)
 
 % Initialise bond force to zero for every time step
-bForceX = zeros(nBonds,1); 
-bForceY = zeros(nBonds,1);
-bForceZ = zeros(nBonds,1);
+% bForceX = zeros(nBonds,1); 
+% bForceY = zeros(nBonds,1);
+% bForceZ = zeros(nBonds,1);
 
 % Calculate X,Y,Z component of bond force 
 bForceX = BFMULTIPLIER .* fail .* BONDSTIFFNESS .* (1 - bondSofteningFactor) .* (stretch - stretchPlastic) * cellVolume .* VOLUMECORRECTIONFACTORS .* (deformedX ./ deformedLength);
