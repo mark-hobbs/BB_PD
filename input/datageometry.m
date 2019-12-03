@@ -16,10 +16,10 @@
 NOD = 3;    % Number of degrees of freedom
 
 length = 1.45;     % x-axis (m)
-width = 0.15;   % y-axis (m)
-depth = 0.3;    % z-axis (m)
+width = 0.19;   % y-axis (m)
+depth = 0.32;    % z-axis (m)
 
-DX = 0.02;    % Spacing between material points (mm). Using a regular discretisation
+DX = 0.0115;    % Spacing between material points (mm). Using a regular discretisation
 
 if NOD == 3
     

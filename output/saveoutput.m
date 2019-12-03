@@ -3,13 +3,13 @@
 % (cantilever with point load etc), job name. Code based on following
 % answer:-
 % https://uk.mathworks.com/matlabcentral/answers/54688-how-to-check-the-existence-of-a-file-and-rename-it
-
+%
 % Unique file name is saved using the following convention:-
 % Output_JobID_{date}_{job number suffix}_{applied load}
+%
 
+% ---------------------------- BEGIN CODE ---------------------------------
 
-
-%% 
 % Find the full path of the output folder located within the BB_PD root
 % directory. 'what' is a built-in matlab function that will locate any
 % folder on the matlab search path and return its contents.
@@ -34,3 +34,5 @@ if isfile(fullFileName)  % if file name already exists
 end % File does not exist
 
 save(fullFileName); % Save workspace
+
+% ----------------------------- END CODE ----------------------------------

@@ -12,7 +12,7 @@ config.newInputFile = 'off';
 
 % Load existing input file - specify the file name containing the input
 % data (input file must be in a .mat form)
-config.loadInputDataFile = 'StuttgartBeam5.mat';
+config.loadInputDataFile = 'StuttgartBeam3.mat';
 
 % -------------------------------------------------------------------------
 % Material Model
@@ -73,7 +73,9 @@ config.dynamicsolverinputlist = {'undeformedCoordinates'...    % (nNodes , NOD)
                                 'nTimeSteps'...                % (1 , 1)
                                 'DT'...                        % (1 , 1)
                                 'timeStepTracker'...           % (1 , 1)
-                                'equilibriumTolerance'};       % (1 , 1)
+                                'equilibriumTolerance'...      % (1 , 1)
+                                'penetrator1'...
+                                'penetrator2'};       
                             
 % Dynamic termination method (on/off)
 config.dynamicSimulationTermination = 'off';

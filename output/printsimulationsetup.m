@@ -28,7 +28,7 @@ function [] = printsimulationsetup()
 % Solver: Dynamic / Static
 % Loading Method: Load Controlled / Displacement Controlled
 % Failure Functionality: on / off
-% Material Model:
+% Material Model: Concrete | Steel | Interface
 % Critical Stretch:
 % Linear Elastic Limit:
 % Time Step Size:

@@ -39,11 +39,11 @@ plotfracturepath(undeformedCoordinates, deformedCoordinates, damage, 0, 1, 25)
 
 %% Strain - calculate and plot strain tensor at every node
 strainTensor = calculatestraintensor(undeformedCoordinates,deformedCoordinates,BONDLIST,fail,damage);
-plotnodaldata(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,1),'Strain \epsilon (1,3)')
+plotnodaldata(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,1),'Strain \epsilon (1,3)',10,10)
 
 %% Stress - calculate and plot stress tensor at every node
 stressTensor = calculatestresstensor(strainTensor,MATERIALFLAG,effectiveModulusConcrete,effectiveModulusSteel,Vconcrete,Vsteel,Gconcrete,Gsteel);
-plotnodaldata(undeformedCoordinates,nodalDisplacement,stressTensor(:,1,1),'Stress \sigma (1,3)')
+plotnodaldata(undeformedCoordinates,nodalDisplacement,stressTensor(:,1,1),'Stress \sigma (1,3)',10,10)
 
 %% Shear Force - calculate the shear force along the length (x-axis) of the member
 [shearForce,averageShearForce] = calculateshearforce(undeformedCoordinates,stressTensor);

@@ -40,8 +40,8 @@ function [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor
 nBonds = size(stretch,1);
 bsf = zeros(nBonds,1);
 
-linearElasticLimitInterface = 3 * linearElasticLimit;
-criticalStretchInterface = 3 * criticalStretchConcrete;
+linearElasticLimitInterface = 2 * linearElasticLimit;
+criticalStretchInterface = 1000 * criticalStretchConcrete;
 
 flagBondSoftening(BONDTYPE == 0 & stretch > linearElasticLimit) = 1;           % concrete-to-concrete bonds     0.008s
 flagBondSoftening(BONDTYPE == 1 & stretch > linearElasticLimitInterface) = 1;  % concrete-to-steel bonds        0.007s

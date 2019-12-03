@@ -1,4 +1,4 @@
-function [] = calculatecontactforce()
+function [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz] = calculatecontactforce(penetrator, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY)
 % calculatecontactforce - Calculate the contact force between the member
 % under analysis and a rigid impactor. The rigid impactor is not
 % deformable. Based on code from rigid_impactor.f90 in Chapter 10 -
@@ -48,105 +48,84 @@ function [] = calculatecontactforce()
 %
 % 6. Update penetrator acceleration, velocity, and displacement
 
-% Code copied from 2D problem
+family = penetrator.family;
+nodalDisplacementOld = nodalDisplacement;
+nodalVelocityOld = nodalVelocity;
+dpenfx = 0;
+dpenfy = 0;
+dpenfz = 0;
+counter = 0;
 
-penetratorfx = 0; % penetrator contact force in x-direction 
-penetratorfy = 0; % penetrator contact force in y-direction
-penetratorfz = 0; % penetrator contact force in z-direction
-penetratormx = 0; % what is this?
-penetratormy = 0;
-penetratormz = 0;
 
+penetrator.centre(:,2) = penetrator.centre(:,2) + displacementIncrement; % Move penetrator vertically (z-axis)
 
-penetratorccx = penetratoricx + penetratorux; % what is this?
-penetratorccy = penetratoricy + penetratoruy;
-penetratorccz = 0;
+% Calculate distance between penetrator centre and nodes in penetrator family
+distanceX = deformedCoordinates(family,1) - penetrator.centre(:,1);
+% distanceY 
+distanceZ = deformedCoordinates(family,3) - penetrator.centre(:,2);
+distance = sqrt((distanceX .* distanceX) + (distanceZ .* distanceZ));
 
-for kNode = 1 : nNodes % loop over all nodes
-
-    newpositionx = undeformedCoordinates(kNode,1) + disp(kNode,1); % new position x
-    newpositiony = undeformedCoordinates(kNode,2) + disp(kNode,2); % new position y
-    newpositionz = 0;                                              % new position z
+% Check if a node lies within the radius of the penetrator
+for i = 1 : size(family,1)
     
-    dpenx = newpositionx - penetratorccx;
-    dpeny = newpositiony - penetratorccy;
-    dpenz = 0;
-    dpend = sqrt(dpenx * dpenx + dpeny * dpeny + dpenz * dpenz);
-    
-    % if a deformable material point is located within the rigid impactor,
-    % the material point is relocated to a new point outside the rigid
-    % impactor. New locations are assigned in order to achieve the closest
-    % distance to the surface of the rigid impactor. 
-    
-    if dpend < penrad %(dpend.lt.penrad) % dpend < penetrator radius
-
-        dpux = dpenx / dpend;
-        dpuy = dpeny / dpend;
-        dpuz = dpenz / dpend;
+    if distance(i,1) < penetrator.radius
         
-        dprx = dpux * penrad;
-        dpry = dpuy * penrad;
-        dprz = dpuz * penrad;     
+        counter = counter + 1;
+                
+        % Calculate new position for nodes that lie within the radius of the
+        % penetrator
         
-        dpcx = penetratorccx + dprx; 
-        dpcy = penetratorccy + dpry; 
-        dpcz = 0;
+        nodei = family(i,1);
         
-        olddispx = disp(kNode,1);
-        olddispy = disp(kNode,2);
-        olddispz = 0;
+        % calculate unit vector
+        unitX = distanceX(i,1) / distance(i,1);
+        % unitY = distanceY / distance;
+        unitZ = distanceZ(i,1) / distance(i,1);
         
-        oldvelx = vel(kNode,1);
-        oldvely = vel(kNode,2);
-        oldvelz = 0;
+        % scale unit vector by penetrator radius
+        unitXScaled = unitX * penetrator.radius;
+        % unitYScaled = unitY * penetrator.radius;
+        unitZScaled = unitZ * penetrator.radius;
         
-        % Modified displacement vector
-        disp(kNode,1) = dpcx - undeformedCoordinates(kNode,1);
-        disp(kNode,2) = dpcy - undeformedCoordinates(kNode,2);
-        disp(kNode,3) = 0;
+        % calculate new position for material points
+        deformedCoordinates(nodei,1) = penetrator.centre(:,1) + unitXScaled;
+        % deformedCoordinates(:,2) = penetrator.centre(:,2) + unitYScaled;    % Material points can't move in y-axis
+        deformedCoordinates(nodei,3) = penetrator.centre(:,2) + unitZScaled;
         
-        % Velocity of a material point in its new location
-        vel(kNode,1) = (disp(kNode,1) - olddisp(kNode,1)) / dt;
-        vel(kNode,2) = (disp(kNode,2) - olddisp(kNode,2)) / dt;
-        vel(kNode,3) = 0;
         
-        % Reaction force from  a material point in the deformable body to
-        % the rigid impactor (Eq 10.2)
-        dpenfx = -1.0d0 * dens * (vel(kNode,1) - oldvelx) / dt * vol;
-        dpenfy = -1.0d0 * dens * (vel(kNode,2) - oldvely) / dt * vol;
-        dpenfz = 0;
+        nodalDisplacement(nodei,:) = deformedCoordinates(nodei,:) - undeformedCoordinates(nodei,:);
         
-        dpenmx = dpry * dpenfz - dprz * dpenfy;
-        dpenmy = dprz * dpenfx - dprx * dpenfz;
-        dpenmz = dprx * dpenfy - dpry * dpenfx;
+        % update velocity
+        nodalVelocity(nodei,:) = (nodalDisplacement(nodei,:) - nodalDisplacementOld(nodei,:)) / DT;
         
-        % Summation of the contributions of all material points inside the
-        % impactor results in the total reaction force on the impactor (Eq
-        % 10.3)
-        penetratorfx = penetratorfx + dpenfx;
-        penetratorfy = penetratorfy + dpenfy;
-        penetratorfz = 0;
+        % determine the reaction force from a material point on the penetrator
+        dpenfx(i,1) = -1 * DENSITY(nodei,1) * (nodalVelocity(nodei,1) - nodalVelocityOld(nodei,1)) / DT * cellVolume;
+        dpenfy(i,1) = -1 * DENSITY(nodei,1) * (nodalVelocity(nodei,2) - nodalVelocityOld(nodei,2)) / DT * cellVolume;
+        dpenfz(i,1) = -1 * DENSITY(nodei,1) * (nodalVelocity(nodei,3) - nodalVelocityOld(nodei,3)) / DT * cellVolume;
         
-        penetratormx = 0;
-        penetratormy = 0;
-        penetratormz = penetratormz + dpenmz;
-
     end
-
+    
 end
-    
-penax = penetratorfx / penetratorMass; % penetrator acceleration in x-direction
-penay = penetratorfy / penetratorMass; % penetrator acceleration in y-direction
-penaz = 0;                             % penetrator acceleration in z-direction
 
-penvx = penvx + penax * dt;            % penetrator velocity in x-direction
-penvy = penvy + penay * dt;            % penetrator velocity in y-direction
-penvz = 0;                             % penetrator velocity in z-direction
+penetratorfx = sum(dpenfx);
+penetratorfy = sum(dpenfy);
+penetratorfz = sum(dpenfz);
 
-penux = penux + penvx * dt;            % penetrator displacement in x-direction
-penuy = penuy + penvy * dt;            % penetrator displacement in y-direction
-penuz = 0;                             % penetrator displacement in z-direction
-    
+% % calculate penetrator acceleration
+% penax = penetratorfx / penetratorMass; 
+% penay = penetratorfy / penetratorMass; 
+% penaz = penetratorfz / penetratorMass;                           
+% 
+% % calculate penetrator velocity
+% penvx = penvx + penax * DT;            
+% penvy = penvy + penay * DT;          
+% penvz = penvz + penaz * DT;                                
+% 
+% % calculate penetrator displacement
+% penux = penux + penvx * DT;            
+% penuy = penuy + penvy * DT;            
+% penuz = penuz + penvz * DT;                                 
+
 % --------------------------- END CODE ------------------------------------
 
 end

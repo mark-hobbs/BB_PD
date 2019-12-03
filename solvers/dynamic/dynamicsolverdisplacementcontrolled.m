@@ -26,6 +26,7 @@ deformedCoordinates = undeformedCoordinates; % At t = 0, deformedCoordinates = u
 nTimeSteps = 100000;
 finalDisplacement = -3e-3;
 frequency = 200;
+BFMULTIPLIER = ones(nBonds,1);
 
 %% Configuring dynamic solver
 
@@ -57,8 +58,8 @@ for iTimeStep = timeStepTracker : nTimeSteps
     displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, finalDisplacement);
     
     % Apply displacement boundary condition - DO!!!!
-    nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
-    deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
+%     nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
+%     deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
     
     % Calculate deformed length of every bond
     [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
@@ -80,11 +81,14 @@ for iTimeStep = timeStepTracker : nTimeSteps
     
     % Adaptively calculate the damping coefficient
     % [cn] = calculatedampingcoefficient(nodalForce, massVector, nodalForcePrevious, DT, nodalVelocityPreviousHalf, nodalDisplacement);
-
+      
     % Time integration
     [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement);    
     % [nodalDisplacement, nodalVelocityForwardHalf] = timeintegrationADR(iTimeStep, DT, nodalVelocityForwardHalf, nodalForce, massVector, cn, nodalVelocityPreviousHalf, nodalDisplacement, CONSTRAINTFLAG);
     % Where are constraint flags applied? ^^^^^^
+    
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator1, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz2] = calculatecontactforce(penetrator2, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
     
     % deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
     % nodalVelocityPreviousHalf = nodalVelocityForwardHalf;
@@ -98,10 +102,11 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % nodalDisplacementHistory(iTimeStep,1) = nodalDisplacement(1500,3);
     
     % Calculate reaction force
-    reactionForce = calculatereactionforceFast(nodalForce, BODYFORCEFLAG, DX); % TODO: introduce frequency
+    % reactionForce = calculatereactionforceFast(nodalForce, BODYFORCEFLAG, DX); % TODO: introduce frequency
+    reactionForce = penetratorfz1 + penetratorfz2;
     
     % Print output to text file
-    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(87,3), fail, flagBondSoftening, flagBondYield);
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(63,3), fail, flagBondSoftening, flagBondYield);
     
     % Save output variables for postprocessing
     % savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail);
