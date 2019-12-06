@@ -1,6 +1,8 @@
 # Ignore files defined in this file
 testing/
-# output/
+output/outputfiles
+output/checkpointfiles
+output/commandwindowoutput.txt
 
 # Ignore large input files > 100,000KB
 input/inputdatafiles/A1fine.mat

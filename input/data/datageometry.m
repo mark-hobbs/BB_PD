@@ -15,8 +15,8 @@
 
 NOD = 3;    % Number of degrees of freedom
 
-length = 1.45;     % x-axis (m)
-width = 0.19;   % y-axis (m)
+length = 1.45;   % x-axis (m)
+width = 0.19;    % y-axis (m)
 depth = 0.32;    % z-axis (m)
 
 DX = 0.0115;    % Spacing between material points (mm). Using a regular discretisation

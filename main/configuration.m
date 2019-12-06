@@ -18,8 +18,9 @@ config.loadInputDataFile = 'StuttgartBeam3.mat';
 % Material Model
 % -------------------------------------------------------------------------
 
-% Material model (linear / bilinear / trilinear)
-% config.materialModel = 'linear';
+config.materialModel.concrete = 'bilinear';     % (linear / bilinear / trilinear)
+config.materialModel.steel = 'plastic';         % (plastic) - elastic perfectly plastic
+config.materialModel.interface = 'linear';      % (linear / bilinear)
 
 % -------------------------------------------------------------------------
 % Solver - select dynamic or static solver

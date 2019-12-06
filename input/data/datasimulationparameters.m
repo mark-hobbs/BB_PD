@@ -5,8 +5,8 @@
 SAFETYFACTOR = 1;                                                                                             % Time step safety factor - to reduce time step size and ensure stable simulation
 DT = (0.8 * sqrt(2 * densityConcrete * DX / (pi * horizon^2 * DX * bondStiffnessConcrete))) / SAFETYFACTOR;   % Minimum stable time step
                                                                                  
-%[DT]=calculatestabletimestep(TOTALNODES,bondlist,VOLUME,DENSITY,c);          % Minimum stable time step (this value is not always stable and a safety factor must be applied) 
-%DT=DT/SAFETYFACTOR;                                                          % Apply safety factor
+% DT = calculatestabletimestep(TOTALNODES,bondlist,VOLUME,DENSITY,c);          % Minimum stable time step (this value is not always stable and a safety factor must be applied) 
+% DT = DT / SAFETYFACTOR;                                                          % Apply safety factor
 nTimeSteps = 5000;                                                            % Number of time steps (10,000 for speed testing)
 
 appliedLoad = -100000;            % Applied load in newtons (remember the load direction)

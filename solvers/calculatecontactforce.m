@@ -24,12 +24,23 @@ function [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz] =
 % Department of Engineering
 % Cambridge University
 % May 2019
+%
+%
+%
+%       Z (height)
+%           ^
+%           |       
+%           |
+%           |   
+%           |
+%         --|-----------> x (length)
+%           |
 
 % ---------------------------- BEGIN CODE ---------------------------------
 
 % pseudo - code
 % 1. create penetrator
-%   1.1 - define centre (x,y,z)
+%   1.1 - define centre (x,~,z)
 %   1.2 - define radius
 %   1.3 - determine penetrator family
 %
@@ -56,12 +67,10 @@ dpenfy = 0;
 dpenfz = 0;
 counter = 0;
 
-
 penetrator.centre(:,2) = penetrator.centre(:,2) + displacementIncrement; % Move penetrator vertically (z-axis)
 
 % Calculate distance between penetrator centre and nodes in penetrator family
 distanceX = deformedCoordinates(family,1) - penetrator.centre(:,1);
-% distanceY 
 distanceZ = deformedCoordinates(family,3) - penetrator.centre(:,2);
 distance = sqrt((distanceX .* distanceX) + (distanceZ .* distanceZ));
 
@@ -109,22 +118,7 @@ end
 
 penetratorfx = sum(dpenfx);
 penetratorfy = sum(dpenfy);
-penetratorfz = sum(dpenfz);
-
-% % calculate penetrator acceleration
-% penax = penetratorfx / penetratorMass; 
-% penay = penetratorfy / penetratorMass; 
-% penaz = penetratorfz / penetratorMass;                           
-% 
-% % calculate penetrator velocity
-% penvx = penvx + penax * DT;            
-% penvy = penvy + penay * DT;          
-% penvz = penvz + penaz * DT;                                
-% 
-% % calculate penetrator displacement
-% penux = penux + penvx * DT;            
-% penuy = penuy + penvy * DT;            
-% penuz = penuz + penvz * DT;                                 
+penetratorfz = sum(dpenfz);                            
 
 % --------------------------- END CODE ------------------------------------
 

@@ -57,9 +57,9 @@ nodalDisplacementForward(:,:) = nodalDisplacement(:,:) + nodalDisplacementDT(:,:
 
 deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacementForward(:,:);             % Deformed coordinates of all nodes
 
-% --------------
-% Optimised Code
-% --------------
+% -------------------
+%   Optimised Code
+% -------------------
 
 % nodalAcceleration(:,:) = (nodalForce(:,:) - DAMPING * nodalVelocity(:,:)) ./ DENSITY(:,:);                      % Acceleration for time:-   tt
 % 
