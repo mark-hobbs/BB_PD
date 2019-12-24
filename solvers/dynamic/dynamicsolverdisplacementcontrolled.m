@@ -36,7 +36,7 @@ dynamicsolverconfiguration
 
 printoutputheader();
 
-tic
+% tic
 
 % randomNumbers = 0.8 + (1.2 - 0.8) .* rand(nBonds,1);
 % for i = 1 : nBonds
@@ -51,7 +51,7 @@ tic
 
 % Time Stepping Loop
 for iTimeStep = timeStepTracker : nTimeSteps
-
+    
     timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
     
     % Use a smooth amplitude curve to define the displacement increment at every time step
@@ -62,7 +62,8 @@ for iTimeStep = timeStepTracker : nTimeSteps
 %     deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
     
     % Calculate deformed length of every bond
-    [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
+    % [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
+    calculatedlMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
     
     % Calculate plastic stretch for steel-steel bonds
     [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
@@ -83,13 +84,13 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % [cn] = calculatedampingcoefficient(nodalForce, massVector, nodalForcePrevious, DT, nodalVelocityPreviousHalf, nodalDisplacement);
       
     % Time integration
-    [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement);    
+    [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement,deformedCoordinates);    
     % [nodalDisplacement, nodalVelocityForwardHalf] = timeintegrationADR(iTimeStep, DT, nodalVelocityForwardHalf, nodalForce, massVector, cn, nodalVelocityPreviousHalf, nodalDisplacement, CONSTRAINTFLAG);
     % Where are constraint flags applied? ^^^^^^
-    
+
     [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator1, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
     [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz2] = calculatecontactforce(penetrator2, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
-    
+
     % deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
     % nodalVelocityPreviousHalf = nodalVelocityForwardHalf;
     % nodalForcePrevious = nodalForce;
@@ -106,7 +107,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     reactionForce = penetratorfz1 + penetratorfz2;
     
     % Print output to text file
-    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(63,3), fail, flagBondSoftening, flagBondYield);
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(135,3), fail, flagBondSoftening, flagBondYield);
     
     % Save output variables for postprocessing
     % savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail);
@@ -114,11 +115,11 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % Save damage figure
     savedamagefigure(iTimeStep,1000,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
     
-    % Save checkpoint file   
-            
+    % Save checkpoint file
+    
 end
 
-timeintegrationTiming = toc;
+% timeintegrationTiming = toc;
 fprintf('Time integration complete in %fs \n', timeintegrationTiming)
 
 % plotvariablehistory(nTimeSteps,nodalDisplacementHistory,'Nodal Displacement (m)')

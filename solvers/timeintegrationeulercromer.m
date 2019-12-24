@@ -1,4 +1,4 @@
-function [nodalDisplacementForward,nodalVelocityForward,deformedCoordinates,nodalDisplacementDT] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,loadingMethod,displacementIncrement)
+function [nodalDisplacementForward,nodalVelocityForward,deformedCoordinates,nodalDisplacementDT] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,loadingMethod,displacementIncrement,deformedCoordinates)
 % timeintegrationeulercromer - Time integration using Euler-Cromer algorithm
 % See https://www.compadre.org/PICUP/resources/Numerical-Integration/ for
 % info on the Euler-Cromer algorithm and other methods for integrating

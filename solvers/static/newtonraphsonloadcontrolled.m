@@ -37,7 +37,8 @@ fail = zeros(nBonds,1) + 1;
 deformedX = zeros(nBonds,1);
 deformedY = zeros(nBonds,1);
 deformedZ = zeros(nBonds,1);
-% deformedLength = zeros(nBonds,1);
+deformedLength = zeros(nBonds,1);
+stretch = zeros(nBonds,1);
 % displacedCoordinates = COORDINATES;       % For the first iteration, displacedCoordinates is equal to COORDINATES
 % nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
 % counterLoadStep = 0;
@@ -91,7 +92,7 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
     [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
 
     % Calculate bond stretch
-    [~,~,~,~,stretch] = calculatedeformedlength(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,deformedZ,nBonds,BONDLIST);
+    [~,~,~,~,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
     %[~,~,~,stretch] = calculatedeformedlength2D(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,nBonds,BONDLIST);
     
     % Calculate plastic stretch for steel-steel bonds
@@ -110,7 +111,7 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
     % Check the convergence criteria
     [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);
     
-    fprintf('Displacement = %.6fmm \n', (deformedCoordinates(150,3) - undeformedCoordinates(150,3))*1000)
+    fprintf('Displacement = %.6fmm \n', (deformedCoordinates(87,3) - undeformedCoordinates(87,3))*1000)
     
     damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
     plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates)*0, damage, 'damage')
@@ -155,7 +156,7 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
         % Calculate the out of balance force vector and check the convergence criteria    
         [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);      
         
-        fprintf('Displacement = %.6fmm \n', (deformedCoordinates(150,3) - undeformedCoordinates(150,3))*1000)
+        fprintf('Displacement = %.6fmm \n', (deformedCoordinates(87,3) - undeformedCoordinates(87,3))*1000)
         
         damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
         plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates)*0, damage, 'damage')

@@ -116,7 +116,7 @@ if strcmp(userInput ,'c')   % Cantilever
 elseif strcmp(userInput, 'ss') % Simply supported member
         
     [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(0.023,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build first support
-    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(1.4385,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build second support
+    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(3.0935,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build second support
     
     % Build loading plate or apply loading within the main body - simply supported members
     % BODYFORCEFLAG = buildappliedloading(BODYFORCEFLAG,0.54,0,0,1);

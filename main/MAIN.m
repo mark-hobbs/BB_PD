@@ -60,6 +60,8 @@ else
     
 end
 
+ printsimulationsetup(config)
+ 
 %% Module 2: Solver
 
 if strcmp(config.solver,'dynamic')
