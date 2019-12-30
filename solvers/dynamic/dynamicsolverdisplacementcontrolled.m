@@ -58,12 +58,12 @@ for iTimeStep = timeStepTracker : nTimeSteps
     displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, finalDisplacement);
     
     % Apply displacement boundary condition - DO!!!!
-%     nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
-%     deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
+    % nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
+    % deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
     
     % Calculate deformed length of every bond
-    % [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
-    calculatedlMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
+    [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
+    % calculatedlMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
     
     % Calculate plastic stretch for steel-steel bonds
     [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);

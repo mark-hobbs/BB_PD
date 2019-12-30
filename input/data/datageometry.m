@@ -15,7 +15,7 @@
 
 NOD = 3;    % Number of degrees of freedom
 
-length = 3.10;   % x-axis (m) TODO: rename length. length() is an inbuilt matlab function
+length = 1.95;   % x-axis (m) TODO: rename length. length() is an inbuilt matlab function
 width = 0.19;    % y-axis (m)
 depth = 0.32;    % z-axis (m)
 

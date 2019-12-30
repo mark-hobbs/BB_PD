@@ -1,4 +1,6 @@
 function [penetrator] = buildpenetrator(penetratorID, penetratorCentreX, penetratorCentreZ, penetratorRadius, searchRadius, undeformedCoordinates)
+% example:
+% [penetrator] = buildpenetrator(1, 0.82, 31*DX, 3*DX, 5.1*DX, undeformedCoordinates)
 
 penetrator.ID = penetratorID;
 penetrator.centre = [penetratorCentreX penetratorCentreZ];

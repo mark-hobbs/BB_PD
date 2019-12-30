@@ -23,20 +23,7 @@ fprintf('Load configuration file \n')
 configuration
 
 %% Log command window output
-if strcmp(config.cmdWindowOuput ,'on')
-    
-    fprintf("Command window output log is switched on \n")
-    findOutputFolder = what('BB_PD/output');
-    outputFolderPath = findOutputFolder.path;
-    diaryFileName = fullfile(outputFolderPath, 'commandwindowoutput.txt');
-    diary(diaryFileName)
-    diary on
-
-elseif strcmp(config.cmdWindowOuput ,'off')
-    
-    fprintf("Command window output log is switched off \n")
-    
-end
+savecmdwindowoutput(config.cmdWindowOuput, config.loadInputDataFile)
 
 %% Input parser
 
@@ -48,17 +35,17 @@ end
 %% Module 1: Input
 % Create input file or load existing input file
 
-if strcmp(config.newInputFile ,'on')
-  
-    createinputdatafile;              % Create new input file
-    fprintf('Created a new input data file \n')
-    
-else
-    
-    inputdatafilename = config.loadInputDataFile;     % Load existing file (specify file name in config file)
-    fprintf('Load existing input data file %s \n', inputdatafilename)
-    
-end
+% if strcmp(config.newInputFile ,'on')
+%   
+%     createinputdatafile;              % Create new input file
+%     fprintf('Created a new input data file \n')
+%     
+% else
+%     
+%     inputdatafilename = config.loadInputDataFile;     % Load existing file (specify file name in config file)
+%     fprintf('Load existing input data file %s \n', inputdatafilename)
+%     
+% end
 
  printsimulationsetup(config)
  
@@ -72,7 +59,7 @@ if strcmp(config.solver,'dynamic')
         % Dynamic Load-Controlled
         % -----------------------------------------------------------------
 
-        fprintf('Start dynamic solver: load-controlled \n')
+        fprintf('Start dynamic solver: load-controlled \n\n')
         [deformedCoordinates,fail,stretch,flagBondYield] = dynamicsolverloadcontrolled(inputdatafilename,config);
 
     elseif strcmp(config.loadingMethod ,'displacementControlled')
@@ -81,7 +68,7 @@ if strcmp(config.solver,'dynamic')
         % Dynamic Displacement-Controlled
         % -----------------------------------------------------------------
 
-        fprintf('Start dynamic solver: displacement-controlled \n')
+        fprintf('Start dynamic solver: displacement-controlled \n\n')
         [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename,config);
 
     end
@@ -92,7 +79,7 @@ elseif strcmp(config.solver,'static')
         % Static Load-Controlled
         % -----------------------------------------------------------------
     
-        fprintf('Start static solver \n')
+        fprintf('Start static solver \n\n')
         [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename,config);
     
         %------------------------------------------------------------------

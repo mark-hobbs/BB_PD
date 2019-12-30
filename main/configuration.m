@@ -12,7 +12,7 @@ config.newInputFile = 'off';
 
 % Load existing input file - specify the file name containing the input
 % data (input file must be in a .mat form)
-config.loadInputDataFile = 'StuttgartBeam7.mat';
+config.loadInputDataFile = 'StuttgartBeam5b.mat';
 
 % -------------------------------------------------------------------------
 % Material Model
@@ -34,7 +34,7 @@ config.solver = 'dynamic';
 % -------------------------------------------------------------------------
 
 % Failure functionality (on/off)
-config.failureFunctionality = 'off';
+config.failureFunctionality = 'on';
 
 % Loading method (loadControlled/displacementControlled)
 config.loadingMethod = 'displacementControlled';
