@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename,config)
+function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, checkpointfileflag, checkpointfilename)
 % -------------------------------------------------------------------------
 % Dynamic Solver Displacement Controlled
 % -------------------------------------------------------------------------
@@ -15,28 +15,43 @@ function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputd
 % -------------------------------------------------------------------------
 
 %% Load the defined input file name
-                     
-load(inputdatafilename, config.dynamicsolverinputlist{:});
+
+if checkpointfileflag == false
+    
+    load(inputdatafilename, config.dynamicsolverinputlist{:});
+    
+end
 
 %% Initialise constants and empty arrays
-arraypreallocation
 
-MAXBODYFORCE = 0; % function calculatenodalforce requires this input
-deformedCoordinates = undeformedCoordinates; % At t = 0, deformedCoordinates = undeformedCoordinates
-nTimeSteps = 100000;
-finalDisplacement = -3e-3;
-frequency = 200;
-BFMULTIPLIER = ones(nBonds,1);
+if checkpointfileflag == false
+    
+    arraypreallocation
+
+    MAXBODYFORCE = 0;                               % function calculatenodalforce requires this input
+    deformedCoordinates = undeformedCoordinates;    % At t = 0, deformedCoordinates = undeformedCoordinates
+    frequency = 200;
+    BFMULTIPLIER = ones(nBonds,1);
+
+end
 
 %% Configuring dynamic solver
 
 dynamicsolverconfiguration
 
+%% Load checkpoint file
+
+if checkpointfileflag == true
+    
+    load(checkpointfilename);
+    
+end
+
 %% Dynamic solver: displacement-controlled
 
 printoutputheader();
 
-% tic
+tic
 
 % randomNumbers = 0.8 + (1.2 - 0.8) .* rand(nBonds,1);
 % for i = 1 : nBonds
@@ -55,7 +70,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
     
     % Use a smooth amplitude curve to define the displacement increment at every time step
-    displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, finalDisplacement);
+    displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
     
     % Apply displacement boundary condition - DO!!!!
     % nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
@@ -63,7 +78,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     
     % Calculate deformed length of every bond
     [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
-    % calculatedlMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
+    calculatedlMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
     
     % Calculate plastic stretch for steel-steel bonds
     [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
@@ -78,7 +93,9 @@ for iTimeStep = timeStepTracker : nTimeSteps
     [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
     
     % Calculate nodal force for every node
-    [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,MAXBODYFORCE);
+    % [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,MAXBODYFORCE);
+    nodalForce(:,:) = 0;    % Nodal force - initialise for every time step
+    calculatenfMex(BONDLIST, nodalForce, bForceX, bForceY, bForceZ);
     
     % Adaptively calculate the damping coefficient
     % [cn] = calculatedampingcoefficient(nodalForce, massVector, nodalForcePrevious, DT, nodalVelocityPreviousHalf, nodalDisplacement);
@@ -103,23 +120,32 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % nodalDisplacementHistory(iTimeStep,1) = nodalDisplacement(1500,3);
     
     % Calculate reaction force
-    % reactionForce = calculatereactionforceFast(nodalForce, BODYFORCEFLAG, DX); % TODO: introduce frequency
+    % reactionForce = calculatereactionforceFast(nodalForce, CONSTRAINTFLAG, DX); % TODO: introduce frequency
     reactionForce = penetratorfz1 + penetratorfz2;
     
     % Print output to text file
-    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(135,3), fail, flagBondSoftening, flagBondYield);
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield);
     
-    % Save output variables for postprocessing
-    % savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail);
+    % Save output variables for postprocessing (BB_PD/output/outputfiles/inputdatafilename/)
+    savedata(iTimeStep,1000,inputdatafilename,deformedCoordinates,fail,flagBondSoftening);
     
-    % Save damage figure
+    % Save damage figure (BB_PD/output/outputfiles/inputdatafilename/)
     savedamagefigure(iTimeStep,1000,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
     
     % Save checkpoint file
+    if mod(iTimeStep, 10000) == 0
+        
+       [folderPath] = findfolder('BB_PD/output/checkpointfiles');
+       inputdatafilename = erase(inputdatafilename,'.mat'); % erase .mat from inputdatafilename
+       baseFileName = sprintf('%s_checkpoint.mat', inputdatafilename);
+       fullFileName = fullfile(folderPath , baseFileName);
+       save(fullFileName)
+        
+    end
     
 end
 
-% timeintegrationTiming = toc;
+timeintegrationTiming = toc;
 fprintf('Time integration complete in %fs \n', timeintegrationTiming)
 
 % plotvariablehistory(nTimeSteps,nodalDisplacementHistory,'Nodal Displacement (m)')

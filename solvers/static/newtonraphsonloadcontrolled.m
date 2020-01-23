@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename,config)
+function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(config)
 % newtonraphsonloadcontrolled - this function uses a standard
 % Newton-Rapshon procedure to solve the static peridynamic equation of
 % motion. Bond failure is not permitted with this method. 
@@ -27,7 +27,7 @@ function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputd
 % ---------------------------- BEGIN CODE ---------------------------------
 
 % Load the defined input file name                  
-load(inputdatafilename, config.dynamicsolverinputlist{:});
+load(config.inputdatafilename, config.dynamicsolverinputlist{:});
 
 % Initialise constants, arrays, and variables
 nNodes = size(undeformedCoordinates,1);

@@ -7,12 +7,10 @@
 % University of Cambridge
 % mch61@cam.ac.uk
 
-% function MAIN(varagin)
+function MAIN(inputdatafilename, checkpointfilename, vargin)
 
-%% Clear the workspace
-clear variables
-close all
-clc
+% MAIN(inputdatafilename)
+% MAIN(inputdatafilename, checkpointfile)
 
 %% Add folder paths
 addfolderpaths
@@ -23,31 +21,32 @@ fprintf('Load configuration file \n')
 configuration
 
 %% Log command window output
-savecmdwindowoutput(config.cmdWindowOuput, config.loadInputDataFile)
+savecmdwindowoutput(config.cmdWindowOuput, inputdatafilename)
 
 %% Input parser
 
-% p = inputParser; % Create an input parser object
-% addParameter(p, 'inputDataFileName', defaultInputDataFileName, @isstring);
-% addParameter(p, 'jobType', defaultJobType, @isstring);
-% addParameter(p, 'appliedLoad', defaultAppliedLoad, @isnumeric); 
+if nargin == 1
+   
+    checkpointfileflag = false;
+    checkpointfilename = 'empty';
+    
+else
+    
+    checkpointfileflag = true;
+    
+end
 
 %% Module 1: Input
-% Create input file or load existing input file
+% Load input file. Create a new input file using the functions and scripts
+% provided in BB_PD/input
+if nargin == 1
+    
+    load(inputdatafilename)
 
-% if strcmp(config.newInputFile ,'on')
-%   
-%     createinputdatafile;              % Create new input file
-%     fprintf('Created a new input data file \n')
-%     
-% else
-%     
-%     inputdatafilename = config.loadInputDataFile;     % Load existing file (specify file name in config file)
-%     fprintf('Load existing input data file %s \n', inputdatafilename)
-%     
-% end
+    % Print details of simulation
+    printsimulationsetup(inputdatafilename, config)
 
- printsimulationsetup(config)
+end
  
 %% Module 2: Solver
 
@@ -60,7 +59,7 @@ if strcmp(config.solver,'dynamic')
         % -----------------------------------------------------------------
 
         fprintf('Start dynamic solver: load-controlled \n\n')
-        [deformedCoordinates,fail,stretch,flagBondYield] = dynamicsolverloadcontrolled(inputdatafilename,config);
+        [deformedCoordinates,fail,stretch,flagBondYield] = dynamicsolverloadcontrolled(inputdatafilename, config);
 
     elseif strcmp(config.loadingMethod ,'displacementControlled')
         
@@ -69,7 +68,7 @@ if strcmp(config.solver,'dynamic')
         % -----------------------------------------------------------------
 
         fprintf('Start dynamic solver: displacement-controlled \n\n')
-        [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename,config);
+        [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, checkpointfileflag, checkpointfilename);
 
     end
                
@@ -80,7 +79,7 @@ elseif strcmp(config.solver,'static')
         % -----------------------------------------------------------------
     
         fprintf('Start static solver \n\n')
-        [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename,config);
+        [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename, config);
     
         %------------------------------------------------------------------
         % Static Displacement-Controlled
@@ -94,4 +93,4 @@ diary off
 % save(outputFileName)
 processresults
 
-% end
+end

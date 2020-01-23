@@ -1,4 +1,4 @@
-function plotstretch(stretch,BONDLIST,undeformedCoordinates,disp)
+function plotstretch(stretch,BONDLIST,undeformedCoordinates,nodalDisplacement)
 % Maximum bond stretch for every node - absolute, tension, compression
 
 plotOnOff = [true, true, true]; % true = on, false = off [absolute, tension, compression]
@@ -46,7 +46,7 @@ if plotOnOff(1) == true % Logic condition to turn plot on/off
     
     % Plot data
     figure
-    scatter3(undeformedCoordinates(:,1)+(disp(:,1,1)*dsf),undeformedCoordinates(:,2)+(disp(:,2,1)*dsf),undeformedCoordinates(:,3)+(disp(:,3,1)*dsf),sz,maxStretchAbsolute(:,1))
+    scatter3(undeformedCoordinates(:,1)+(nodalDisplacement(:,1,1)*dsf),undeformedCoordinates(:,2)+(nodalDisplacement(:,2,1)*dsf),undeformedCoordinates(:,3)+(nodalDisplacement(:,3,1)*dsf),sz,maxStretchAbsolute(:,1))
     axis equal
     title('Maximum Absolute Bond Stretch')
     xlabel('x')
@@ -96,7 +96,7 @@ if plotOnOff(2) == true
 
     % Plot data
     figure
-    scatter3(undeformedCoordinates(:,1)+(disp(:,1,1)*dsf),undeformedCoordinates(:,2)+(disp(:,2,1)*dsf),undeformedCoordinates(:,3)+(disp(:,3,1)*dsf),sz,maxStretchTension(:,1))
+    scatter3(undeformedCoordinates(:,1)+(nodalDisplacement(:,1,1)*dsf),undeformedCoordinates(:,2)+(nodalDisplacement(:,2,1)*dsf),undeformedCoordinates(:,3)+(nodalDisplacement(:,3,1)*dsf),sz,maxStretchTension(:,1))
     axis equal
     title('Maximum Bond Stretch - Tension')
     xlabel('x')
@@ -146,7 +146,7 @@ if plotOnOff(3) == true
     
     % Plot data
     figure
-    scatter3(undeformedCoordinates(:,1)+(disp(:,1,1)*dsf),undeformedCoordinates(:,2)+(disp(:,2,1)*dsf),undeformedCoordinates(:,3)+(disp(:,3,1)*dsf),sz,maxStretchCompression(:,1))
+    scatter3(undeformedCoordinates(:,1)+(nodalDisplacement(:,1,1)*dsf),undeformedCoordinates(:,2)+(nodalDisplacement(:,2,1)*dsf),undeformedCoordinates(:,3)+(nodalDisplacement(:,3,1)*dsf),sz,maxStretchCompression(:,1))
     axis equal
     title('Maximum Bond Stretch - Compression')
     xlabel('x')

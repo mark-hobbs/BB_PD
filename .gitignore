@@ -7,3 +7,6 @@ output/commandwindowoutput.txt
 # Ignore large input files > 100,000KB
 input/inputdatafiles/A1fine.mat
 input/inputdatafiles/C2_b.mat
+
+# Ignore large input files > 50,000KB
+input/inputdatafiles/StuttgartBeam10.mat

@@ -1,7 +1,8 @@
-function [] = savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail)
-% savedata - 
+function [] = savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail,flagBondSoftening)
+% savedata - Save variables for postprocessing (deformedCoordinates, fail, flagBondSoftening)
+% in folder BB_PD/output/outputfiles/inputdatafilename/
 %
-% Syntax: [] = savedata()
+% Syntax: [] = savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail,,flagBondSoftening)
 %
 % Inputs:
 %   input1 -
@@ -33,10 +34,23 @@ if mod(iTimeStep, frequency) == 0
     % folder on the matlab search path and return its contents.
     outputFolderContentList = what('BB_PD/output/outputfiles');
     outputFolderPath = outputFolderContentList.path;
+    outputSubfolderPath = fullfile(outputFolderPath , inputdatafilename); % BB_PD/output/outputfiles/inputdatafilename/
+    
+    % Determine if the output subfolder exists 
+    if ~exist(outputSubfolderPath, 'dir')
+        mkdir(outputSubfolderPath);
+    end
     
     baseFileName = sprintf('%s_%d.mat', inputdatafilename, iTimeStep);
-    fullFileName = fullfile(outputFolderPath , baseFileName);
-    
+    fullFileName = fullfile(outputSubfolderPath , baseFileName);
+      
+    % Save variables for postprocessing (deformedCoordinates, fail, flagBondSoftening)
+    save(fullFileName, 'deformedCoordinates', 'fail', 'flagBondSoftening')
+
+end
+
+% ----------------------------- END CODE ----------------------------------
+
 %     jobNumberSuffix = 2; % Start at 2. First file is saved above
 %     
 %     if isfile(fullFileName)  % if file name already exists
@@ -48,15 +62,5 @@ if mod(iTimeStep, frequency) == 0
 %         jobNumberSuffix = jobNumberSuffix + 1;
 %         
 %     end % File does not exist
-
-    % Save variables for postprocessing
-    % | deformedCoordinates | fail |
-    
-    save(fullFileName, 'deformedCoordinates', 'fail')
-
-
-end
-
-% ----------------------------- END CODE ----------------------------------
 
 end

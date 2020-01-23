@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail,stretch,flagBondYield] = dynamicsolverloadcontrolled(inputdatafilename,config)
+function [deformedCoordinates,fail,stretch,flagBondYield] = dynamicsolverloadcontrolled(config)
 % -------------------------------------------------------------------------
 % Dynamic Solver Load Controlled
 % -------------------------------------------------------------------------
@@ -16,7 +16,7 @@ function [deformedCoordinates,fail,stretch,flagBondYield] = dynamicsolverloadcon
 
 %% Load the defined input file name
                      
-load(inputdatafilename, config.dynamicsolverinputlist{:});
+load(config.inputdatafilename, config.dynamicsolverinputlist{:});
 % nodalMass = DENSITY * cellVolume; 
 % totalSystemMass = sum(nodalMass);
 

@@ -95,6 +95,8 @@ clear all
 clc
 fprintf('Module 1: Create input data file \n')
 
+%% ------------------------------ Load Data -------------------------------
+
 %% ------------------------------- Part 1 ---------------------------------
 
 datageometry            % Load member geometry data
@@ -116,7 +118,7 @@ if strcmp(userInput ,'c')   % Cantilever
 elseif strcmp(userInput, 'ss') % Simply supported member
         
     [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(0.023,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build first support
-    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(1.9435,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1); % Build second support
+    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(4.692,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1); % Build second support
     
     % Build loading plate or apply loading within the main body - simply supported members
     % BODYFORCEFLAG = buildappliedloading(BODYFORCEFLAG,0.54,0,0,1);
@@ -153,7 +155,7 @@ plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
 % Improve spatial localtiy of data (space filling curve ordering of particles)
 % [] = hilbertCurve();
 
-horizon = pi * DX; % Be consistent - this is sometimes known as the horizonRadius
+horizon = pi * DX; % Be consistent - this is also known as the horizonRadius
 
 % Build node families, bond lists, and determine undeformed length of every bond
 [nFAMILYMEMBERS,NODEFAMILYPOINTERS,NODEFAMILY,BONDLIST,UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates,horizon);

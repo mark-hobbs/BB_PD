@@ -15,11 +15,11 @@
 
 NOD = 3;    % Number of degrees of freedom
 
-length = 1.95;   % x-axis (m) TODO: rename length. length() is an inbuilt matlab function
-width = 0.19;    % y-axis (m)
-depth = 0.32;    % z-axis (m)
+length = 1.45;     % x-axis (m) TODO: rename length. length() is an inbuilt matlab function
+width = 0.19;     % y-axis (m) 
+depth = 0.32;     % z-axis (m)
 
-DX = 0.0115;    % Spacing between material points (mm). Using a regular discretisation
+DX = 0.0115;    % Spacing between material points (mm). Using a regular discretisation. 0.007667 / 0.0115
 
 if NOD == 3
     

@@ -1,4 +1,4 @@
-function [stressTensor,principleStress,test] = calculatestresstensor(strainTensor,MATERIALFLAG,effectiveModulusConcrete,effectiveModulusSteel,Vconcrete,Vsteel,Gconcrete,Gsteel)
+function [stressTensor,maxPrincipalStress] = calculatestresstensor(strainTensor,MATERIALFLAG,effectiveModulusConcrete,effectiveModulusSteel,Vconcrete,Vsteel,Gconcrete,Gsteel)
 % calculatestresstensor - calculate Cauchy true stress tensor
 
 %% Initialise constants
@@ -6,7 +6,7 @@ function [stressTensor,principleStress,test] = calculatestresstensor(strainTenso
 nNodes = size(strainTensor,1);
 NOD = size(strainTensor,2);
 stressTensor = zeros(nNodes,NOD,NOD);
-principleStress = zeros(nNodes,NOD,NOD);
+principalStress = zeros(nNodes,NOD,NOD);
 
 %% Main body of calculatestresstensor function
 
@@ -46,16 +46,13 @@ if NOD == 3
 
         stressTensor(kNode,:,:) = [stressXX stressXY stressXZ; stressYX stressYY stressYZ; stressZX stressZY stressZZ];
         
-        temp = squeeze(stressTensor(kNode,:,:));
+        principalStress(kNode,:,:) = eig(squeeze(strainTensor(kNode,:,:)), 'matrix');
         
-        principleStress(kNode,:,:) = eig(temp(:,:),'matrix');
+        temp = squeeze(principalStress(kNode,:,:));
+        temp = [temp(1,1), temp(2,2), temp(3,3)];
         
-        temp2 = squeeze(principleStress(kNode,:,:));
-        
-        test(kNode,1) = max(max(temp2));
-        
-        
-               
+        maxPrincipalStress(kNode,1) = min(temp); %min(temp(temp > 0));
+                                              
    end
     
 elseif NOD == 2

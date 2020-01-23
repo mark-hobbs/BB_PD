@@ -1,4 +1,4 @@
-function [strainTensor] = calculatestraintensor(COORDINATES,disp,BONDLIST,fail,damage)
+function [strainTensor, maxPrincipalStrains] = calculatestraintensor(COORDINATES,disp,BONDLIST,fail,damage,nNodes)
 % calculatestraintensor - returns the strain tensor at every node of a
 % given set using state based theory with correspondency strategy.
 %
@@ -61,6 +61,8 @@ XX = zeros(nNODES, NOD, NOD);
 YX = zeros(nNODES, NOD, NOD);
 F2 = zeros(nNODES, NOD, NOD);
 I = eye(NOD); % identity matrix
+
+principalStrains = zeros(nNodes,NOD,NOD);
    
 %% Node lists
 % tic
@@ -137,19 +139,27 @@ end
 
 % Loop nodes - runs faster in parfor loop
 
-parfor kNode = 1 : nNODES
+for kNode = 1 : nNODES
     
     YXkNode = squeeze(YX(kNode,:,:)); % Remove dimensions of length 1
     XXkNode = squeeze(XX(kNode,:,:)); % Remove dimensions of length 1
     
-     if  damage(kNode) < 0.1  % det(XXkNode) > 1e-20 % this is to avoid singularities 
+     if damage(kNode) < 0.1 % det(XXkNode) > 1e-20 this is to avoid singularities 
                 
         F = YXkNode * XXkNode^-1 + I; % calculate deformation gradient
         
         % convert deformation gradient into small strains - Operator ' complex conjugate transpose
         % See this webpage http://www.continuummechanics.org/smallstrain.html
-        strainTensor(kNode,:,:) = 0.5 * (F + F') - I; % Small deformations
-        %strainTensor(kNode,:,:) = 0.5 * (I - inv(F') * inv(F));  % Large deformations (need to check the correct formula)   
+        strainTensor(kNode,:,:) = 0.5 * (F + F') - I;             % Small deformations
+        % strainTensor(kNode,:,:) = 0.5 * (I - inv(F') * inv(F));  % Large deformations (need to check the correct formula)  
+        
+        principalStrains(kNode,:,:) = eig(squeeze(strainTensor(kNode,:,:)), 'matrix');
+        
+        temp = squeeze(principalStrains(kNode,:,:));
+        
+        maxPrincipalStrains(kNode,1) = min(temp(temp>0));
+        
+        %maxPrincipalStrains(kNode,1) = max(max((eig(squeeze(strainTensor(kNode,:,:)), 'matrix'))));
 
      else
     
