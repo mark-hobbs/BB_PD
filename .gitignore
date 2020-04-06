@@ -4,9 +4,14 @@ output/outputfiles
 output/checkpointfiles
 output/commandwindowoutput.txt
 
-# Ignore large input files > 100,000KB
+# Ignore large input files > 50,000KB
+# Github has a strict file size limit of 100,000KB 
 input/inputdatafiles/A1fine.mat
 input/inputdatafiles/C2_b.mat
 
-# Ignore large input files > 50,000KB
 input/inputdatafiles/StuttgartBeam10.mat
+input/inputdatafiles/StuttgartBeam3_fine.mat
+input/inputdatafiles/StuttgartBeam5_fine.mat
+input/inputdatafiles/StuttgartBeam7_fine.mat
+input/inputdatafiles/StuttgartBeam7_very_fine.mat
+
