@@ -45,5 +45,6 @@ scatter(COORDINATESCONCRETE(:,2),COORDINATESCONCRETE(:,3),sz2,'b','filled');
 hold on
 scatter(COORDINATESSTEEL(:,2),COORDINATESSTEEL(:,3),sz2,'g','filled')
 hold off
+axis equal
         
 end 

@@ -23,7 +23,22 @@ for i = 1 : nNodes
 
 end   
     
-plotnodes(undeformedCoordinates(penetrator.family,:), 'penetrator family', 100, 30, 30)
+plotnodes(undeformedCoordinates(penetrator.family,:), 'penetrator family', 10, 0, 0)
+
+
+circle(penetratorCentreX, penetratorCentreZ, penetratorRadius);
+
 
 end
+
+function circle(x,z,r)
+hold on
+th = 0 : pi/50 : 2*pi;
+xunit = r * cos(th) + x;
+yunit = zeros(1,size(th,2));
+zunit = r * sin(th) + z;
+h = plot3(xunit, yunit, zunit);
+hold off
+end
+
 

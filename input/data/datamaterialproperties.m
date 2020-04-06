@@ -10,8 +10,8 @@ densitySteel = 8000;        % Density steel (kg/m^3)
 
 %------------------------- Young's Modulus --------------------------------
 
-Econcrete = 30.5E9;    % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
-Esteel = 208e9;          % Young's modulus
+Econcrete = 30.5E9;     % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
+Esteel = 208e9;         % Young's modulus
 
 
 %------------------------- Fracture Energy --------------------------------

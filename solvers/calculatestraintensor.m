@@ -1,4 +1,4 @@
-function [strainTensor, maxPrincipalStrains] = calculatestraintensor(COORDINATES,disp,BONDLIST,fail,damage,nNodes)
+function [strainTensor, maxPrincipalStrains, oneone, twotwo, threethree] = calculatestraintensor(COORDINATES,disp,BONDLIST,fail,damage,nNodes)
 % calculatestraintensor - returns the strain tensor at every node of a
 % given set using state based theory with correspondency strategy.
 %
@@ -49,7 +49,7 @@ function [strainTensor, maxPrincipalStrains] = calculatestraintensor(COORDINATES
 % TODO: Include failure of bonds
     
 matX = COORDINATES;         % matX contains the initial coordinates of a particle
-matY = disp;  % matY contains the deformed coordinates of a particle
+matY = disp;                % matY contains the deformed coordinates of a particle
 
 nNODES = size(matX,1);      % number of particles
 NOD = size(matX,2);         % number of dimensions
@@ -146,21 +146,24 @@ for kNode = 1 : nNODES
     
      if damage(kNode) < 0.1 % det(XXkNode) > 1e-20 this is to avoid singularities 
                 
-        F = YXkNode * XXkNode^-1 + I; % calculate deformation gradient
+        F = YXkNode * XXkNode^-1; % calculate deformation gradient
         
         % convert deformation gradient into small strains - Operator ' complex conjugate transpose
         % See this webpage http://www.continuummechanics.org/smallstrain.html
-        strainTensor(kNode,:,:) = 0.5 * (F + F') - I;             % Small deformations
+        strainTensor(kNode,:,:) = 0.5 * (F + F') - I;              % Small deformations
         % strainTensor(kNode,:,:) = 0.5 * (I - inv(F') * inv(F));  % Large deformations (need to check the correct formula)  
         
         principalStrains(kNode,:,:) = eig(squeeze(strainTensor(kNode,:,:)), 'matrix');
         
         temp = squeeze(principalStrains(kNode,:,:));
         
-        maxPrincipalStrains(kNode,1) = min(temp(temp>0));
+        maxPrincipalStrains(kNode,1) = 1; %max(temp(temp > 0));
         
-        %maxPrincipalStrains(kNode,1) = max(max((eig(squeeze(strainTensor(kNode,:,:)), 'matrix'))));
-
+        oneone(kNode,1) = principalStrains(kNode,1,1);
+        twotwo(kNode,1) = principalStrains(kNode,1,1);
+        threethree(kNode,1) = principalStrains(kNode,1,1);
+        
+      
      else
     
          F = I;

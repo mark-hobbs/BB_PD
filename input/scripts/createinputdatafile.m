@@ -117,8 +117,8 @@ if strcmp(userInput ,'c')   % Cantilever
     
 elseif strcmp(userInput, 'ss') % Simply supported member
         
-    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(0.023,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build first support
-    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(4.692,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1); % Build second support
+    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(0.01,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build first support
+    [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(3.095,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build second support
     
     % Build loading plate or apply loading within the main body - simply supported members
     % BODYFORCEFLAG = buildappliedloading(BODYFORCEFLAG,0.54,0,0,1);
@@ -136,19 +136,19 @@ userInput = input("Build steel reinforcing bars? (y/n)  ",'s');     % Include st
 if strcmp(userInput ,'y')   % Reinforced Concrete
     
     % Build longitudinal reinforcement
-    [MATERIALFLAG] = buildlongitudinalreinforcement(undeformedCoordinates, DX*4.5, DX*4.5, DX*1.5, MATERIALFLAG, nNodes);
-    [MATERIALFLAG] = buildlongitudinalreinforcement(undeformedCoordinates, DX*13.5, DX*4.5, DX*1.5, MATERIALFLAG, nNodes);
+    [MATERIALFLAG] = buildlongitudinalreinforcement(undeformedCoordinates, DX*8.5, DX*9.5, DX*2.5, MATERIALFLAG, nNodes);
+    [MATERIALFLAG] = buildlongitudinalreinforcement(undeformedCoordinates, DX*25.5, DX*9.5, DX*2.5, MATERIALFLAG, nNodes);
 
 end
 
 % Plot boundary conditions
-plotflags(undeformedCoordinates,BODYFORCEFLAG)
-plotflags(undeformedCoordinates,CONSTRAINTFLAG)
+% plotflags(undeformedCoordinates,BODYFORCEFLAG)
+% plotflags(undeformedCoordinates,CONSTRAINTFLAG)
 plotdiscretisedmember(undeformedCoordinates,MATERIALFLAG)
 
 % Plot undeformed nodes and check for errors 
 plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane ', 10, 0, 0)
-plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
+% plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
 
 %% ------------------------------- Part 2 ---------------------------------
 

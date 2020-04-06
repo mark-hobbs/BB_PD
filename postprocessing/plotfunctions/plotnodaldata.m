@@ -57,7 +57,7 @@ elseif NOD == 3
     axis equal
     colormap jet 
     colorbar
-
+    
 end
 
 % ----------------------- END CODE --------------------------------------

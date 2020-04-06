@@ -19,25 +19,25 @@ nodalDisplacement = deformedCoordinates - undeformedCoordinates;
 
 %% 2D cross-section view - plot cross section of damage data
 
-crossSectionFlag = (undeformedCoordinates(:,2) == (DX * 4)) == 1;   % Identify and flag nodes located in cross-section (X-Y Plane)
 
-coordCrossSection = undeformedCoordinates(:,:);
-dispCrossSection = nodalDisplacement(:,:);
-damageCrossSection = damage(:,:);
-logicCondition1 = crossSectionFlag == 0;                        % Delete node if it is not located in cross-section (flag == 0)
-coordCrossSection(logicCondition1,:) = [];
-dispCrossSection(logicCondition1,:) = [];
-damageCrossSection(logicCondition1,:) = [];
+[coordCrossSection] = extractcrosssection(undeformedCoordinates, undeformedCoordinates, DX*6);
+[dispCrossSection] = extractcrosssection(undeformedCoordinates, nodalDisplacement, DX*6);
+[damageCrossSection] = extractcrosssection(undeformedCoordinates, damage, DX*6);
 
 % figure
 scatter(coordCrossSection(:,1) + (dispCrossSection(:,1,1) * dsf), coordCrossSection(:,3) + (dispCrossSection(:,3,1) * dsf), sz, damageCrossSection(:,1), 'filled')
 axis equal
 xlabel('x') % length
 ylabel('y') % depth
+% xlim([0 4.7])
+% ylim([-0.05 0.35])
 colormap jet 
 colorbar
 caxis([0 1])
 h = colorbar;
 ylabel(h, 'Damage')
+% set(gca,'XColor', 'none','YColor','none')
+
+% rectangle('Position',[0 0 (max(coordCrossSection(:,1)) + DX) (max(coordCrossSection(:,3)) + DX)], 'LineWidth', 1.5)
 
 end

@@ -4,10 +4,11 @@ function [] = plotstressdistribution(COORDINATES,DX,stresstensor)
 % normal to the X axis, in the direction of the Z axis
 
 % Identify and flag a single column of nodes, parallel with z-axis
-xCoord=DX*50;    % column x-coordinate
-yCoord=DX*10;     % column y-coordinate
+xCoord=DX*20;   % column x-coordinate
+yCoord=DX*8;    % column y-coordinate
+zCoord=DX*0;    % z-coordinate
 
-crossSectionFlag=(COORDINATES(:,1)==xCoord & COORDINATES(:,2)==yCoord)==1; 
+crossSectionFlag=(COORDINATES(:,1)==xCoord & COORDINATES(:,2)==yCoord & COORDINATES(:,3) > zCoord)==1; 
 coordCrossSection=COORDINATES(:,:);
 stressCrossSection=stresstensor(:,:,:);
 logicCondition1 = crossSectionFlag==0;          % Delete node if it is not located in cross-section (flag==0)
@@ -22,6 +23,7 @@ str1=sprintf('Normal stress distribution \\sigma (1,1) at coordinates x = %.0fmm
 title(str1)
 xlabel('Normal stress \sigma (1,1) N/m^{2}')
 ylabel('Z axis - beam depth (m)')
+ylim([0 0.35])
 
 % Plot shear stress distribution through the depth of the beam
 figure;
@@ -30,6 +32,7 @@ str2=sprintf('Shear stress distribution \\sigma (1,3) at coordinates x = %.0fmm,
 title(str2)
 xlabel('Shear stress \sigma (1,3) N/m^{2}')
 ylabel('Z axis - beam depth (m) ')
+ylim([0 0.35])
 
 % figure;
 % tension=stressCrossSection(:,1).*abs(coordCrossSection(:,3)-0.1);

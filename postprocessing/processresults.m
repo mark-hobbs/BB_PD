@@ -17,18 +17,27 @@ function processresults(outputfile,inputdatafilename)
 
 % ---------------------------- BEGIN CODE ---------------------------------
 
-%% Load required data and set-up variables
+%% Load required data
 load(outputfile)
 load(inputdatafilename)
+
+%% Set-up arrays and variables
+nBonds = size(BONDLIST,1);
+stretch = zeros(nBonds,1);
+deformedLength = zeros(nBonds,1);
+deformedX = zeros(nBonds,1);
+deformedY = zeros(nBonds,1);
+deformedZ = zeros(nBonds,1);
 
 nodalDisplacement = deformedCoordinates - undeformedCoordinates;
 
 %% Plot deformed member
-plotdeformedmember(deformedCoordinates, undeformedCoordinates, MATERIALFLAG)
+plotdeformedmember(undeformedCoordinates, undeformedCoordinates, MATERIALFLAG)
 
 %% Calculate and plot damage for every node
 damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX , 0, 10)
+plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX , 0, 10)    % (damage - 1) * -1
+% plotnodaldata(undeformedCoordinates, nodalDisplacement, damage, 'Damage', 10, 0)
 
 %% Plot the fracture path
 plotfracturepath(undeformedCoordinates, deformedCoordinates, damage, 0, 1, 25)
@@ -36,24 +45,38 @@ plotfracturepath(undeformedCoordinates, deformedCoordinates, damage, 0, 1, 25)
 %% Calculate and plot softening damage for every node
 flagBondSoftening = - (flagBondSoftening - 1); % Switch flag value. This is to ensure compatibility with calculatedamage()
 softeningDamage = calculatedamage(BONDLIST, flagBondSoftening, nFAMILYMEMBERS);
-%plotbonddamage(undeformedCoordinates, deformedCoordinates, softeningDamage, DX , 0, 10)
-plotnodaldata(undeformedCoordinates, nodalDisplacement, softeningDamage, 'Softening Damage', 10, 0)
+plotbonddamage(undeformedCoordinates, deformedCoordinates, softeningDamage, DX , 0, 10)
+% plotnodaldata(undeformedCoordinates, nodalDisplacement, softeningDamage, 'Softening Damage', 10, 0)
 
 %% Bond Stretch - plot stretch of every bond 
 % TODO: seperate calculation of max stretch etc and plotnodaldata()
-plotstretch(stretch, BONDLIST, undeformedCoordinates, nodalDisplacement);    
+
+[deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
+
+plotstretch(stretch, fail, BONDLIST, undeformedCoordinates, nodalDisplacement, DX, 100, 20);    
 
 %% Strain - calculate and plot strain tensor at every node
-[strainTensor, maxPrincipalStrains] = calculatestraintensor(undeformedCoordinates,deformedCoordinates,BONDLIST,fail,damage,nNodes);
-%plotnodaldata(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,3),'Strain \epsilon (1,3)',10,10)
-maxPrincipalStrains = filloutliers(maxPrincipalStrains,'clip');
-plotnodaldata(undeformedCoordinates,nodalDisplacement,maxPrincipalStrains,'Strain \epsilon (1,3)',10,10)
+[strainTensor, maxPrincipalStrains, oneone, twotwo, threethree] = calculatestraintensor(undeformedCoordinates,deformedCoordinates,BONDLIST,fail,damage,nNodes);
+% plotnodaldata(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,3),'Strain \epsilon (1,3)',20,0)
+plotnodaldatacrosssection(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,1),DX,'Strain \epsilon (1,3)',20,0)
+
+% maxPrincipalStrains = filloutliers(maxPrincipalStrains,'clip');
+% plotnodaldata(undeformedCoordinates, nodalDisplacement, maxPrincipalStrains, 'Strain \epsilon (1,3)', 10, 0)
+oneone = filloutliers(oneone,'clip');
+plotnodaldatacrosssection(undeformedCoordinates, nodalDisplacement, -oneone, DX, 'Principal Strain', 20, 0)
 
 %% Stress - calculate and plot stress tensor at every node
 [stressTensor,maxPrincipalStress] = calculatestresstensor(strainTensor,MATERIALFLAG,effectiveModulusConcrete,effectiveModulusSteel,Vconcrete,Vsteel,Gconcrete,Gsteel);
-% plotnodaldata(undeformedCoordinates,nodalDisplacement,stressTensor(:,1,3),'Stress \sigma (1,3)',10,10)
+
+[undeformedCoordinatesReduced] = extractmaterial(undeformedCoordinates, MATERIALFLAG, 1);
+[nodalDisplacementReduced] = extractmaterial(nodalDisplacement, MATERIALFLAG, 1);
+[stressTensorReduced] = extractmaterial(stressTensor, MATERIALFLAG, 1);
+
+stressTensorReduced = filloutliers(stressTensorReduced(:,1),'clip');
+plotnodaldata(undeformedCoordinatesReduced, nodalDisplacementReduced, stressTensorReduced(:,1), 'Stress \sigma (1,3)', 20, 0)
+% plotnodaldatacrosssection(undeformedCoordinates, nodalDisplacement, stressTensor(:,1,1), DX, 'Stress \sigma (1,3)', 20, 0)
 maxPrincipalStress = filloutliers(maxPrincipalStress,'clip');
-plotnodaldata(undeformedCoordinates,nodalDisplacement,maxPrincipalStress,'Stress',10,10)
+plotnodaldatacrosssection(undeformedCoordinates, nodalDisplacement, maxPrincipalStress, DX,'Stress', 10, 10)
 
 %% Shear Force - calculate the shear force along the length (x-axis) of the member
 [shearForce,averageShearForce] = calculateshearforce(undeformedCoordinates,stressTensor);
@@ -63,6 +86,8 @@ str1 = sprintf('Shear Force Diagram, average shear force V_{average} = %.0fN', a
 title(str1)
 xlabel('x axis (m)')
 ylabel('Shear Force V (N)')
+
+plotstressdistribution(undeformedCoordinates,DX,stressTensor)
 
 % ----------------------------- END CODE ----------------------------------
 

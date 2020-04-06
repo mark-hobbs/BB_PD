@@ -52,7 +52,7 @@ elseif NOD == 3
     grid off
 
     % Plot cross-section of beam in z-y plane
-    sz2 = 40;
+    sz2 = 100;
     figure;
     scatter(COORDINATESCONCRETE(:,2),COORDINATESCONCRETE(:,3),sz2,'b','filled');
     hold on
