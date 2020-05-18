@@ -49,10 +49,10 @@ fprintf('Depth (z-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n\n', membe
 fprintf('Number of nodes: \t %10d \t %10d \t %10d \n', nNodes, sum(MATERIALFLAG == 0), sum(MATERIALFLAG == 1))                        % total | concrete | steel
 fprintf('Number of bonds: \t %10d \t %10d \t %10d \t %10d \n\n', nBonds, sum(BONDTYPE == 0), sum(BONDTYPE == 1), sum(BONDTYPE == 2))  % total | concrete | steel | interface
 
-fprintf('DX: \t\t\t\t\t %12.3f mm \n', DX * m_mm)                                    % DX
-fprintf('Cell Volume: \t\t\t %12.3f mm^3 \n', cellVolume * m_mm^3)                   % Cell Volume
-fprintf('Horizon Radius: \t\t %12.3f mm \n', horizonRadius * m_mm)                   % Horizon
-fprintf('Neigbourhood Volume: \t %12.3f mm^3 \n\n', neighbourhoodVolume * m_mm^3)    % Neighbourhood Volume
+fprintf('DX:%37.3f mm \n', DX * m_mm)                                           % DX
+fprintf('Cell Volume:%28.3f mm^3 \n', cellVolume * m_mm^3)                      % Cell Volume 
+fprintf('Horizon Radius:%25.3f mm \n', horizonRadius * m_mm)                    % Horizon 
+fprintf('Neigbourhood Volume:%20.3f mm^3 \n\n', neighbourhoodVolume * m_mm^3)   % Neighbourhood Volume (Field width = 40)
 
 fprintf('Family Size Max/Min: \t %d \t / \t %d \n\n', max(nFAMILYMEMBERS), min(nFAMILYMEMBERS))  % Nodal family size
 
@@ -67,13 +67,13 @@ fprintf('Family Size Max/Min: \t %d \t / \t %d \n\n', max(nFAMILYMEMBERS), min(n
 % =========================================================================
 
 % Solver: Dynamic / Static
-fprintf('Solver: \t\t\t\t %s \n', config.solver) 
+fprintf('Solver:%43s\n', config.solver) 
 
 % Loading Method: Load Controlled / Displacement Controlled
-fprintf('Loading method: \t\t %s \n', config.loadingMethod) 
+fprintf('Loading method:%35s\n', config.loadingMethod) 
 
 % Failure Functionality: on / off
-fprintf('Failure functionality: \t %s \n\n', config.failureFunctionality) 
+fprintf('Failure functionality:%28s\n\n', config.failureFunctionality) % (Field Width = 50)
 
 % =========================================================================
 %                         Material Properties
@@ -84,15 +84,15 @@ fprintf('Failure functionality: \t %s \n\n', config.failureFunctionality)
 % fprintf('\t - Cylindrical Compressive Strength (N/mm^2): \t \n')     % Compressive strength (cylindrical)
 % fprintf('\t - Tensile Strength (N/mm^2): \t \n\n')                   % Tensile strength
 
-fprintf('Modulus of Elasticity (N/mm^2): \t %10.3E \t %10.3E \n', Econcrete, Esteel)                          % Modulus of Elasticity (Young's Modulus) (N/mm^2)
-fprintf('Fracture Energy (N/m): \t\t\t\t %10.2f \t %10.2f \n', fractureEnergyConcrete, fractureEnergySteel)   % Fracture Energy (N/m)
-fprintf('Density (kg/m^3): \t\t\t\t\t %10.2f \t %10.2f \n\n', densityConcrete, densitySteel)                  % Density (kg/m^3)
+fprintf('Modulus of Elasticity (N/mm^2):%15.3E\t%10.3E\n', Econcrete, Esteel)                      % Modulus of Elasticity (Young's Modulus) (N/mm^2)
+fprintf('Fracture Energy (N/m):%24.2f\t%10.2f \n', fractureEnergyConcrete, fractureEnergySteel)    % Fracture Energy (N/m)
+fprintf('Density (kg/m^3):%29.2f\t%10.2f \n\n', densityConcrete, densitySteel)                     % Density (kg/m^3)
 
 % Poisson's Ratio
 % Shear Modulus
 % Effective Modulus
 
-fprintf('Bond Stiffness (no correction): \t %.3E \t %.3E \n\n', bondStiffnessConcrete, bondStiffnessSteel)  % Bond stiffness (no correction)
+fprintf('Bond Stiffness (no correction):%15.3E\t%10.3E \n\n', bondStiffnessConcrete, bondStiffnessSteel)  % Bond stiffness (no correction)
 
 % Material Model: Concrete | Steel | Interface
 % fprintf('Concrete: %s \t Steel: %s \t Interface: %s \n\n', config.materialModel.concrete, config.materialModel.steel, config.materialModel.interface)
@@ -104,11 +104,11 @@ fprintf('Bond Stiffness (no correction): \t %.3E \t %.3E \n\n', bondStiffnessCon
 %                        Simulation Paramaters
 % =========================================================================
 
-fprintf('Time Step Size DT: \t\t %12.5E s \n', DT)                              % Time Step Size
-fprintf('Number of Time Steps: \t %12d \n', nTimeSteps)                         % Number of Time Steps
-fprintf('Simulation Time: \t\t %12.5f s \n', (DT * nTimeSteps))                 % Total Simulation Time
-fprintf('Damping: \t\t\t\t %12d \n', DAMPING)                                   % Damping
-fprintf('Applied Displacement: \t %12.2f mm \n\n', appliedDisplacement * m_mm)  % Applied displacement
+fprintf('Time Step Size DT:%20.5E s \n', DT)                                % Time Step Size (Field width = 38)
+fprintf('Number of Time Steps:%17d \n', nTimeSteps)                         % Number of Time Steps 
+fprintf('Simulation Time:%22.5f s \n', (DT * nTimeSteps))                   % Total Simulation Time
+fprintf('Damping:%30d \n', DAMPING)                                         % Damping
+fprintf('Applied Displacement:%17.2f mm \n\n', appliedDisplacement * m_mm)  % Applied displacement
 
 % =========================================================================
 %                        Output Configuration

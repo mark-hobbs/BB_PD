@@ -32,9 +32,9 @@ function [] = plotnodaldatacrosssection(undeformedCoordinates,nodalDisplacement,
 % ----------------------- BEGIN CODE --------------------------------------
 
 
-[coordCrossSection] = extractcrosssection(undeformedCoordinates, undeformedCoordinates, DX*4);
-[dispCrossSection] = extractcrosssection(undeformedCoordinates, nodalDisplacement, DX*4);
-[dataCrossSection] = extractcrosssection(undeformedCoordinates, nodalData, DX*4);
+[coordCrossSection] = extractcrosssection(undeformedCoordinates, undeformedCoordinates, DX*8);
+[dispCrossSection] = extractcrosssection(undeformedCoordinates, nodalDisplacement, DX*8);
+[dataCrossSection] = extractcrosssection(undeformedCoordinates, nodalData, DX*8);
 
 figure
 scatter(coordCrossSection(:,1) + (dispCrossSection(:,1,1) * dsf), coordCrossSection(:,3) + (dispCrossSection(:,3,1) * dsf), sz, dataCrossSection, 'filled')

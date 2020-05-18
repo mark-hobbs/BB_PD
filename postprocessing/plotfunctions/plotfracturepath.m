@@ -44,8 +44,8 @@ view(30,30)   % View in 3D
 grid off
 colormap jet 
 caxis([0 1])
-h = colorbar;
-ylabel(h, 'Damage')
+% h = colorbar;
+% ylabel(h, 'Damage')
 
 % ----------------------- BEGIN CODE --------------------------------------
 

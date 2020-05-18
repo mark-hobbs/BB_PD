@@ -20,9 +20,9 @@ nodalDisplacement = deformedCoordinates - undeformedCoordinates;
 %% 2D cross-section view - plot cross section of damage data
 
 
-[coordCrossSection] = extractcrosssection(undeformedCoordinates, undeformedCoordinates, DX*6);
-[dispCrossSection] = extractcrosssection(undeformedCoordinates, nodalDisplacement, DX*6);
-[damageCrossSection] = extractcrosssection(undeformedCoordinates, damage, DX*6);
+[coordCrossSection] = extractcrosssection(undeformedCoordinates, undeformedCoordinates, DX*8);
+[dispCrossSection] = extractcrosssection(undeformedCoordinates, nodalDisplacement, DX*8);
+[damageCrossSection] = extractcrosssection(undeformedCoordinates, damage, DX*8);
 
 % figure
 scatter(coordCrossSection(:,1) + (dispCrossSection(:,1,1) * dsf), coordCrossSection(:,3) + (dispCrossSection(:,3,1) * dsf), sz, damageCrossSection(:,1), 'filled')

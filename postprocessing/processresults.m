@@ -36,7 +36,7 @@ plotdeformedmember(undeformedCoordinates, undeformedCoordinates, MATERIALFLAG)
 
 %% Calculate and plot damage for every node
 damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX , 0, 10)    % (damage - 1) * -1
+plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX , 0, 5)    % (damage - 1) * -1
 % plotnodaldata(undeformedCoordinates, nodalDisplacement, damage, 'Damage', 10, 0)
 
 %% Plot the fracture path
@@ -58,7 +58,7 @@ plotstretch(stretch, fail, BONDLIST, undeformedCoordinates, nodalDisplacement, D
 %% Strain - calculate and plot strain tensor at every node
 [strainTensor, maxPrincipalStrains, oneone, twotwo, threethree] = calculatestraintensor(undeformedCoordinates,deformedCoordinates,BONDLIST,fail,damage,nNodes);
 % plotnodaldata(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,3),'Strain \epsilon (1,3)',20,0)
-plotnodaldatacrosssection(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,1),DX,'Strain \epsilon (1,3)',20,0)
+plotnodaldatacrosssection(undeformedCoordinates,nodalDisplacement,strainTensor(:,1,3),DX,'Strain \epsilon (1,3)',20,0)
 
 % maxPrincipalStrains = filloutliers(maxPrincipalStrains,'clip');
 % plotnodaldata(undeformedCoordinates, nodalDisplacement, maxPrincipalStrains, 'Strain \epsilon (1,3)', 10, 0)

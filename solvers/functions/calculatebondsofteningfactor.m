@@ -12,7 +12,9 @@ function [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor
 % 
 %
 % Outputs:
-%   bondSofteningFactor      -
+%   bondSofteningFactor      - softening factor (a softening factor of 1
+%   would indicate that a bond has exceeded the critical stretch)
+%   flagBondSoftening        - flag to identify bonds that have reached the linear elastic limit 
 %
 % Other m-files required: none
 % Subfunctions: none

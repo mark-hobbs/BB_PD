@@ -49,6 +49,12 @@ end
 
 %% Dynamic solver: displacement-controlled
 
+
+nodalForceX = zeros(nNodes,4);
+nodalForceZ = zeros(nNodes,4);
+nodalForceY = zeros(nNodes,4);
+
+
 printoutputheader();
 
 tic
@@ -59,6 +65,7 @@ tic
 %         BONDSTIFFNESS(i) = randomNumbers(i) * BONDSTIFFNESS(i);
 %     end
 % end
+
 
 % [massVector] = buildmassmatrix(nNodes, DX, bondStiffnessConcrete, DT, nFAMILYMEMBERS);
 %[~, ~, ~, massVector] = buildstiffnessmatrixCSCformat(undeformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail);
@@ -73,7 +80,7 @@ executionTimeD = zeros(timingPeriod,1);
 executionTimeE = zeros(timingPeriod,1);  
 executionTimeF = zeros(timingPeriod,1);  
 executionTimeG = zeros(timingPeriod,1);  
-executionTimeH = zeros(timingPeriod,1);  
+executionTimeH = zeros(timingPeriod,1); 
 
 % Time Stepping Loop
 for iTimeStep = timeStepTracker : nTimeSteps
@@ -90,7 +97,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % Calculate deformed length of every bond
     tic
     % [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
-    calculatedlMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
+    calculatedeformedlengthMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
     executionTimeA(iTimeStep) = toc;
     
     % Calculate plastic stretch for steel-steel bonds
@@ -106,7 +113,8 @@ for iTimeStep = timeStepTracker : nTimeSteps
     
     % Determine if bonds have failed
     tic
-    [fail] = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
+    calculatebondfailureMex(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
+    % [fail] = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
     executionTimeD(iTimeStep) = toc;
     
     % Calculate bond force for every bond
@@ -117,11 +125,14 @@ for iTimeStep = timeStepTracker : nTimeSteps
     
     % Calculate nodal force for every node
     tic
-    [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,MAXBODYFORCE);
-    % nodalForce(:,:) = 0;    % Nodal force - initialise for every time step
-    % calculatenfparallelMex(BONDLIST, nodalForce, bForceX, bForceY, bForceZ); 
+    % [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,MAXBODYFORCE);
+    nodalForce(:,:) = 0;     % Nodal force - initialise for every time step
+    nodalForceX(:,:) = 0;    % Nodal force - initialise for every time step
+    nodalForceY(:,:) = 0;    % Nodal force - initialise for every time step
+    nodalForceZ(:,:) = 0;    % Nodal force - initialise for every time step
+    calculatenodalforcesopenmpMex(BONDLIST, nodalForce, bForceX, bForceY, bForceZ, nodalForceX, nodalForceY, nodalForceZ)
     executionTimeF(iTimeStep) = toc;
-    
+        
     % Adaptively calculate the damping coefficient
     % [cn] = calculatedampingcoefficient(nodalForce, massVector, nodalForcePrevious, DT, nodalVelocityPreviousHalf, nodalDisplacement);
       
@@ -135,6 +146,8 @@ for iTimeStep = timeStepTracker : nTimeSteps
     tic
     [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator1, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
     [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz2] = calculatecontactforce(penetrator2, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
+    %[nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz1] = calculatecontactforce(support1, 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
+    %[nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz2] = calculatecontactforce(support2, 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
     executionTimeH(iTimeStep) = toc;
     
     % deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
@@ -151,6 +164,9 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % Calculate reaction force
     % reactionForce = calculatereactionforceFast(nodalForce, CONSTRAINTFLAG, DX); % TODO: introduce frequency
     reactionForce = penetratorfz1 + penetratorfz2;
+    % reactionForce = supportfz1 + supportfz2;
+    
+    % CMOD = nodalDisplacement(20,1) - nodalDisplacement(15,1);
     
     % Print output to text file
     printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield);

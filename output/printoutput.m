@@ -14,7 +14,8 @@ function [] = printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement
 %   flagBondYield       - Identify point at which steel yields
 %   kineticEnergy       -
 %   strainEnergy        -
-%   damageEnergy        -   
+%   damageEnergy        - 
+%   CMOD                - Crack mouth opening displacement 
 %   
 % 
 % Outputs:
@@ -40,13 +41,14 @@ if mod(iTimeStep, frequency) == 0
     sumFBS = sum(flagBondSoftening);
     sumFBY = sum(flagBondYield);
     nodalDisplacement = nodalDisplacement * 1000; % convert from m to mm
+    % CMOD = CMOD * 1000;                           % convert from m to mm
     
     % | Time Step | Reaction Force (N) | Displacement (mm) | .... 
     % | Damage | Concrete Softening | Interface Softening | Steel Yielding | ...
     % | Max Stretch Concrete | Max Stretch Interface | Max Stretch Steel | ...
     % | Kinetic Energy | Strain Energy | Damage Energy | ...
 
-    fprintf('%.0f \t %.3f \t %.3f \t %.0f \t %.0f \t %.0f \n', iTimeStep, reactionForce, nodalDisplacement, sumFail, sumFBS, sumFBY)
+    fprintf('%.0f \t %.5f \t %.6f \t %.0f \t %.0f \t %.0f \n', iTimeStep, reactionForce, nodalDisplacement, sumFail, sumFBS, sumFBY)
 
 end
 

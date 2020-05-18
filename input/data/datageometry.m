@@ -15,11 +15,11 @@
 
 NOD = 3;    % Number of degrees of freedom
 
-length = 3.10;     % x-axis (m) TODO: rename length. length() is an inbuilt matlab function
-width = 0.19;     % y-axis (m) 
-depth = 0.32;     % z-axis (m)
+length = 0.175;   % x-axis (m) TODO: rename length. length() is an inbuilt matlab function
+width = 0.05;     % y-axis (m) 
+depth = 0.05;     % z-axis (m)
 
-DX = 0.023/4;    % Spacing between material points (mm). Using a regular discretisation (0.00575 m / 0.007667 m / 0.0115 m)
+DX = 5/1000;    % Spacing between material points (mm). Using a regular discretisation (0.00575 m / 0.007667 m / 0.0115 m)
 
 if NOD == 3
     
@@ -44,8 +44,9 @@ end
 
 RADIJ = DX/2;       % Material point radius
 
+
 %% Define member geometry
 
 memberLength = nDivX * DX;     % Length (m) - x
-memberHeight = nDivY * DX;     % Height (m) - y
+memberDepth = nDivY * DX;      % Depth (m) - y
 memberWidth = nDivZ * DX;      % Width (m) - z

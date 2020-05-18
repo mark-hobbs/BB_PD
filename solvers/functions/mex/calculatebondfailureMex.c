@@ -33,9 +33,9 @@ void calculatebondfailure(double *fail, double failureFunctionality, double *BON
 
         // fail = 0 when a bond has failed
 
-        if ( fail[kBond] == 1 && BONDTYPE[kBond] == 0 && stretch[kBond] > criticalStretchConcrete ) { fail[kBond] = failureFunctionality }       // concrete bond
-        if ( fail[kBond] == 1 && BONDTYPE[kBond] == 1 && stretch[kBond] > 3 * criticalStretchConcrete ) { fail[kBond] = failureFunctionality }   // concrete-steel interface bond
-        if ( fail[kBond] == 1 && BONDTYPE[kBond] == 2 && stretch[kBond] > criticalStretchSteel ) { fail[kBond] = failureFunctionality }          // steel bond
+        if ( fail[kBond] == 1 && BONDTYPE[kBond] == 0 && stretch[kBond] > criticalStretchConcrete ) { fail[kBond] = failureFunctionality; }       // concrete bond
+        if ( fail[kBond] == 1 && BONDTYPE[kBond] == 1 && stretch[kBond] > 3 * criticalStretchConcrete ) { fail[kBond] = failureFunctionality; }   // concrete-steel interface bond
+        if ( fail[kBond] == 1 && BONDTYPE[kBond] == 2 && stretch[kBond] > criticalStretchSteel ) { fail[kBond] = failureFunctionality; }          // steel bond
         
      
     }
