@@ -10,7 +10,7 @@ DT = (0.8 * sqrt(2 * densityConcrete * DX / (pi * horizon^2 * DX * bondStiffness
 nTimeSteps = 200000;                                                          % Number of time steps (10,000 for speed testing)
 
 appliedLoad = -100000;            % Applied load in newtons (remember the load direction)
-appliedDisplacement = -3e-3;      % Applied displacement in mm 
+appliedDisplacement = -3e-3;      % Applied displacement in m 
 BUILDUP = 0;                      % Build load up over defined number of time steps
 DAMPING = 1.2e6;                  % Damping coefficient (2.5e6 for testing)
 

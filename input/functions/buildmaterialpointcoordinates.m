@@ -1,9 +1,6 @@
-function [undeformedCoordinates] = buildmaterialpointcoordinates()
+function [undeformedCoordinates] = buildmaterialpointcoordinates(NOD, DX, nDivX, nDivY, nDivZ)
 % buildmaterialpointcoordinates - specification of material point
 % coordinates using a regular discretisation
-
-%% Load data
-datageometry
 
 %% Main body of function
 
@@ -16,9 +13,9 @@ if NOD == 2
     undeformedCoordinates = zeros((nDivX * nDivY), NOD); % Initialise coordinates array
     counter = 0;
 
-    for k3 = 1 : nDivY % depth (height)
+    for k3 = 0 : nDivY % depth (height)
 
-        for k1 = 1 : nDivX % length
+        for k1 = 0 : nDivX % length
 
             coordx = DX * k1;
             coordy = DX * k3;
@@ -39,11 +36,11 @@ elseif NOD == 3
     undeformedCoordinates = zeros((nDivX * nDivY * nDivZ), NOD); % Initialise coordinates array
     counter = 0;
 
-    for k3 = 1 : nDivZ % width
+    for k3 = 0 : nDivZ % width
 
-        for k2 = 1 : nDivY  % depth (height)
+        for k2 = 0 : nDivY  % depth (height)
 
-            for k1 = 1 : nDivX % length
+            for k1 = 0 : nDivX % length
 
                 coordx = DX * k1;
                 coordy = DX * k2;

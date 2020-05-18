@@ -42,16 +42,16 @@ fprintf('\nInput file: \t %s \n\n', inputdatafilename)
 %                       Geometry and Discretisation
 % =========================================================================
 
-fprintf('Length (x-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', memberLength, nDivX)   % Length (x-axis)
-fprintf('Width (y-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', memberWidth, nDivY)     % Width (y-axis)
-fprintf('Depth (z-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n\n', memberHeight, nDivZ)  % Depth (z-axis)
+fprintf('Length (x-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', member.LENGTH, nDivX + 1)   % Length (x-axis)
+fprintf('Width (y-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', member.WIDTH, nDivY + 1)     % Width (y-axis)
+fprintf('Depth (z-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n\n', member.DEPTH, nDivZ + 1)   % Depth (z-axis)
 
 fprintf('Number of nodes: \t %10d \t %10d \t %10d \n', nNodes, sum(MATERIALFLAG == 0), sum(MATERIALFLAG == 1))                        % total | concrete | steel
 fprintf('Number of bonds: \t %10d \t %10d \t %10d \t %10d \n\n', nBonds, sum(BONDTYPE == 0), sum(BONDTYPE == 1), sum(BONDTYPE == 2))  % total | concrete | steel | interface
 
 fprintf('DX:%37.3f mm \n', DX * m_mm)                                           % DX
 fprintf('Cell Volume:%28.3f mm^3 \n', cellVolume * m_mm^3)                      % Cell Volume 
-fprintf('Horizon Radius:%25.3f mm \n', horizonRadius * m_mm)                    % Horizon 
+fprintf('Horizon Radius:%25.3f mm \n', horizon * m_mm)                          % Horizon 
 fprintf('Neigbourhood Volume:%20.3f mm^3 \n\n', neighbourhoodVolume * m_mm^3)   % Neighbourhood Volume (Field width = 40)
 
 fprintf('Family Size Max/Min: \t %d \t / \t %d \n\n', max(nFAMILYMEMBERS), min(nFAMILYMEMBERS))  % Nodal family size
@@ -84,15 +84,15 @@ fprintf('Failure functionality:%28s\n\n', config.failureFunctionality) % (Field 
 % fprintf('\t - Cylindrical Compressive Strength (N/mm^2): \t \n')     % Compressive strength (cylindrical)
 % fprintf('\t - Tensile Strength (N/mm^2): \t \n\n')                   % Tensile strength
 
-fprintf('Modulus of Elasticity (N/mm^2):%15.3E\t%10.3E\n', Econcrete, Esteel)                      % Modulus of Elasticity (Young's Modulus) (N/mm^2)
-fprintf('Fracture Energy (N/m):%24.2f\t%10.2f \n', fractureEnergyConcrete, fractureEnergySteel)    % Fracture Energy (N/m)
-fprintf('Density (kg/m^3):%29.2f\t%10.2f \n\n', densityConcrete, densitySteel)                     % Density (kg/m^3)
+fprintf('Modulus of Elasticity (N/mm^2):%15.3E\t%10.3E\n', material.concrete.E, material.steel.E)                      % Modulus of Elasticity (Young's Modulus) (N/mm^2)
+fprintf('Fracture Energy (N/m):%24.2f\t%10.2f \n', material.concrete.fractureEnergy, material.steel.fractureEnergy)    % Fracture Energy (N/m)
+fprintf('Density (kg/m^3):%29.2f\t%10.2f \n\n', material.concrete.density, material.steel.density)                     % Density (kg/m^3)
 
 % Poisson's Ratio
 % Shear Modulus
 % Effective Modulus
 
-fprintf('Bond Stiffness (no correction):%15.3E\t%10.3E \n\n', bondStiffnessConcrete, bondStiffnessSteel)  % Bond stiffness (no correction)
+fprintf('Bond Stiffness (no correction):%15.3E\t%10.3E \n\n', bond.concrete.stiffness, bond.steel.stiffness)  % Bond stiffness (no correction)
 
 % Material Model: Concrete | Steel | Interface
 % fprintf('Concrete: %s \t Steel: %s \t Interface: %s \n\n', config.materialModel.concrete, config.materialModel.steel, config.materialModel.interface)
