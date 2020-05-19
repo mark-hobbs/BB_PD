@@ -42,9 +42,9 @@ fprintf('\nInput file: \t %s \n\n', inputdatafilename)
 %                       Geometry and Discretisation
 % =========================================================================
 
-fprintf('Length (x-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', member.LENGTH, nDivX + 1)   % Length (x-axis)
-fprintf('Width (y-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', member.WIDTH, nDivY + 1)     % Width (y-axis)
-fprintf('Depth (z-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n\n', member.DEPTH, nDivZ + 1)   % Depth (z-axis)
+fprintf('Length (x-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', member.LENGTH, nDivX)   % Length (x-axis)
+fprintf('Width (y-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n', member.WIDTH, nDivY)     % Width (y-axis)
+fprintf('Depth (z-axis): \t %8.3f m \t Discretisation: \t %6d nodes \n\n', member.DEPTH, nDivZ)   % Depth (z-axis)
 
 fprintf('Number of nodes: \t %10d \t %10d \t %10d \n', nNodes, sum(MATERIALFLAG == 0), sum(MATERIALFLAG == 1))                        % total | concrete | steel
 fprintf('Number of bonds: \t %10d \t %10d \t %10d \t %10d \n\n', nBonds, sum(BONDTYPE == 0), sum(BONDTYPE == 1), sum(BONDTYPE == 2))  % total | concrete | steel | interface

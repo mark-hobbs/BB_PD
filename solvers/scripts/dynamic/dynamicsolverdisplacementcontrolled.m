@@ -99,16 +99,16 @@ for iTimeStep = timeStepTracker : nTimeSteps
     reactionForce = penetratorfz1;
     % reactionForce = supportfz1 + supportfz2;
     
-    % CMOD = nodalDisplacement(20,1) - nodalDisplacement(15,1);
+    CMOD = nodalDisplacement(75,1) - nodalDisplacement(65,1);
     
     % Print output to text file
-    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield);
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD);
     
     % Save output variables for postprocessing (BB_PD/output/outputfiles/inputdatafilename/)
-    savedata(iTimeStep,1000,inputdatafilename,deformedCoordinates,fail,flagBondSoftening);
+    % savedata(iTimeStep,1000,inputdatafilename,deformedCoordinates,fail,flagBondSoftening);
     
     % Save damage figure (BB_PD/output/outputfiles/inputdatafilename/)
-    savedamagefigure(iTimeStep,200,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
+    % savedamagefigure(iTimeStep,200,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
     
     % Save checkpoint file
     if mod(iTimeStep, 10000) == 0

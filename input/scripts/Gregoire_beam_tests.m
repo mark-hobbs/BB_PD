@@ -104,9 +104,9 @@ fprintf('Module 1: Create input data file \n')
 %% Geometry and Discretisation 
 
 member.NOD = 3;             % Number of degrees of freedom
-member.LENGTH = 0.175;      % x-axis (m) 
+member.LENGTH = 0.7;        % x-axis (m) 
 member.WIDTH = 0.05;        % y-axis (m) 
-member.DEPTH = 0.05;         % z-axis (m)
+member.DEPTH = 0.2;         % z-axis (m)
 
 DX = 5/1000;                        % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
@@ -139,8 +139,8 @@ CONSTRAINTFLAG = zeros(nNodes, member.NOD);   % Create flag to identify constrai
 
 supportRadius = 5 * DX;
 searchRadius = 10.1 * DX;
-supportCentreX = [ DX * (0.025/DX) , DX * (0.15/DX) ];
-supportCentreZ = - supportRadius;
+supportCentreX = [ (DX * (0.1/DX)) + DX , DX * (0.6/DX) ];
+supportCentreZ = - supportRadius + DX;
 supports(1) = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 supports(2) = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 clear supportRadius searchRadius supportCentreX supportCentreZ
@@ -167,6 +167,8 @@ horizon = pi * DX; % Be consistent - this is also known as the horizonRadius
 % Build node families, bond lists, and determine undeformed length of every bond
 [nFAMILYMEMBERS,NODEFAMILYPOINTERS,NODEFAMILY,BONDLIST,UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates,horizon);
 
+%% Build half or fifth-notch
+
 %% Volume correction factors 
 
 % Calculate volume correction factors to improve the accuracy of spatial
@@ -186,8 +188,8 @@ neighbourhoodVolume = (4/3) * pi * horizon^3;   % Neighbourhood volume for node 
 bond.concrete.stiffness = (12 * material.concrete.E) / (pi * horizon^4);    % Bond stiffness 3D
 bond.steel.stiffness = (12 * material.steel.E) / (pi * horizon^4);          % Bond stiffness 3D
 
-bond.concrete.s0 = 6.34E-5;  % constitutive law
-bond.concrete.sc = 1.6E-3;
+bond.concrete.s0 = 9.4595E-05;  % constitutive law
+bond.concrete.sc = 2.0235E-03;
 bond.steel.sc = 1;
 
 %% Bond stiffness correction (surface effects)
@@ -200,11 +202,11 @@ bond.steel.sc = 1;
 SAFETYFACTOR = 1;                                                                                                          % Time step safety factor - to reduce time step size and ensure stable simulation
 DT = (0.8 * sqrt(2 * material.concrete.density * DX / (pi * horizon^2 * DX * bond.concrete.stiffness))) / SAFETYFACTOR;     % Minimum stable time step
 
-nTimeSteps = 200000;            % Number of time steps
-DAMPING = 1E7;                  % Damping coefficient
-appliedDisplacement = -2E-3;    % Applied displacement (m)
-referenceNode = 18;             % Define a reference point/node for measuring deflections
-timeStepTracker = 1;            % Tracker for determining previous time step when restarting simulations
+nTimeSteps = 200000;              % Number of time steps
+DAMPING = 0;                      % Damping coefficient
+appliedDisplacement = -0.5E-3;    % Applied displacement (m)
+referenceNode = 70;               % Define a reference point/node for measuring deflections
+timeStepTracker = 1;              % Tracker for determining previous time step when restarting simulations
 
 
 % Calculate applied body force per node (cell)
