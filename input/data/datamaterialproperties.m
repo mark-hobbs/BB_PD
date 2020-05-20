@@ -10,7 +10,7 @@ material.steel.density = 8000;        % Density steel (kg/m^3)
 
 %------------------------- Young's Modulus --------------------------------
 
-material.concrete.E = 30.5E9;     % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
+material.concrete.E = 30E9;       % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
 material.steel.E = 208e9;         % Young's modulus
 
 

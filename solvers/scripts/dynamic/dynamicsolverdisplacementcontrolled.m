@@ -97,9 +97,9 @@ for iTimeStep = timeStepTracker : nTimeSteps
     
     % Calculate reaction force
     reactionForce = penetratorfz1;
-    % reactionForce = supportfz1 + supportfz2;
+    %reactionForce = supportfz1 + supportfz2;
     
-    CMOD = nodalDisplacement(75,1) - nodalDisplacement(65,1);
+    CMOD = nodalDisplacement(25,1) - nodalDisplacement(10,1);
     
     % Print output to text file
     printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD);

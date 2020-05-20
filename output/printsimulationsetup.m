@@ -96,8 +96,10 @@ fprintf('Bond Stiffness (no correction):%15.3E\t%10.3E \n\n', bond.concrete.stif
 
 % Material Model: Concrete | Steel | Interface
 % fprintf('Concrete: %s \t Steel: %s \t Interface: %s \n\n', config.materialModel.concrete, config.materialModel.steel, config.materialModel.interface)
-% Critical Stretch
-% Linear Elastic Limit
+fprintf('Concrete constitutive law: \n')
+fprintf('\tlinear elastic limit s_0: %10.3E \n', bond.concrete.s0)
+fprintf('\tcritical stretch s_c: %14.3E \n\n', bond.concrete.sc)
+
 % Yielding Stretch Steel
 
 % =========================================================================
