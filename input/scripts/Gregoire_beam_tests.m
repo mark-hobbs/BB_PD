@@ -104,9 +104,9 @@ fprintf('Module 1: Create input data file \n')
 %% Geometry and Discretisation 
 
 member.NOD = 3;             % Number of degrees of freedom
-member.LENGTH = 0.175;        % x-axis (m) 
+member.LENGTH = 0.350;        % x-axis (m) 
 member.WIDTH = 0.05;        % y-axis (m) 
-member.DEPTH = 0.05;         % z-axis (m)
+member.DEPTH = 0.10;         % z-axis (m)
 
 DX = 5/1000;                        % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
@@ -139,7 +139,7 @@ CONSTRAINTFLAG = zeros(nNodes, member.NOD);   % Create flag to identify constrai
 
 supportRadius = 5 * DX;
 searchRadius = 10.1 * DX;
-supportCentreX = [ (DX * (0.025/DX)) + DX , DX * (0.15/DX) ];
+supportCentreX = [ (DX * (0.05/DX)) + DX , DX * (0.3/DX) ];
 supportCentreZ = - supportRadius + DX;
 supports(1) = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 supports(2) = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);

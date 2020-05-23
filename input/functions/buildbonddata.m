@@ -47,7 +47,7 @@ for kBond = 1 : nBonds
     % Calculate stiffening factor - surface corrections for 2D/3D problem
     nodeiNeighbourhoodVolume = nFAMILYMEMBERS(nodei) * cellVolume;                                              % Neighbourhood area/volume for Node 'i'
     nodejNeighbourhoodVolume = nFAMILYMEMBERS(nodej) * cellVolume;                                              % Neighbourhood area/volume for Node 'j'
-    stiffeningFactor = (2 * neighbourhoodVolume) / ((nodeiNeighbourhoodVolume + nodejNeighbourhoodVolume) * VOLUMECORRECTIONFACTORS(kBond));       % Calculate stiffening correction factor
+    stiffeningFactor = (2 * neighbourhoodVolume) / ((nodeiNeighbourhoodVolume + nodejNeighbourhoodVolume)); % * VOLUMECORRECTIONFACTORS(kBond));       % Calculate stiffening correction factor
     BONDSTIFFNESS(kBond) = stiffeningFactor * bondStiffnessTemp ;                                                % Correct the bond stiffness
 
 end
