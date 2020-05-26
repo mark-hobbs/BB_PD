@@ -17,10 +17,10 @@ clc
 
 %% Geometry and Discretisation 
 
-member.NOD = 3;             % Number of degrees of freedom
-member.LENGTH = 1;        % x-axis (m) 
+member.NOD = 3;          % Number of degrees of freedom
+member.LENGTH = 1;       % x-axis (m) 
 member.WIDTH = 1;        % y-axis (m) 
-member.DEPTH = 1;         % z-axis (m)
+member.DEPTH = 1;        % z-axis (m)
 
 DX = 50/1000;                       % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
@@ -40,8 +40,8 @@ fprintf('Length (x) = %.2fm \nDepth (y) = %.2fm \nWidth (z) = %.2fm \n', memberL
 fprintf('DX = %.4fm \n', DX)
 fprintf('nDivX = %.0f \nnDivY = %.0f \nnDivZ = %.0f \n', nDivX, nDivY, nDivZ)
 
-plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane ', 10, 0, 0)    % Plot undeformed nodes and check for errors
-plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
+% plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane ', 10, 0, 0)    % Plot undeformed nodes and check for errors
+% plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
 
 MATERIALFLAG = zeros(nNodes, 1);
 
@@ -211,22 +211,49 @@ bond.steel.sc = 1;
 nBonds = size(BONDLIST,1);
 counter = 0;
 
+A = [0 0 0.525];
+B = [0 1 0.525];
+C = [0.05 1 0.525];
+D = [0.05 0 0.525];
+
+% A = [0.5 0 0.525];
+% B = [0.5 1 0.525];
+% C = [0.55 1 0.525];
+% D = [0.55 0 0.525];
+
+% A = [0 0 0.525];
+% B = [0 1 0.525];
+% C = [1 1 0.525];
+% D = [1 0 0.525];
+
+
 % Calculate the nodal force (N/m^3) for every node, iterate over the bond list
 for kBond = 1 : nBonds
     
     nodei = BONDLIST(kBond,1); % Node i
     nodej = BONDLIST(kBond,2); % Node j
     
-    if undeformedCoordinates(nodei,3) < 0.525 && undeformedCoordinates(nodej,3) > 0.525
-        
-        counter = counter + 1;
-        newBL(counter,:) = [nodei, nodej];
-        newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
-        newBS(counter,:) = BONDSTIFFNESS(kBond,1);
-   
-    end
+    [checkcheck] = determineintersection(A, B, C, D, undeformedCoordinates(nodei,:), undeformedCoordinates(nodej,:));
     
-    if undeformedCoordinates(nodej,3) < 0.525 && undeformedCoordinates(nodei,3) > 0.525
+%     if undeformedCoordinates(nodei,3) < 0.525 && undeformedCoordinates(nodej,3) > 0.525
+%         
+%         counter = counter + 1;
+%         newBL(counter,:) = [nodei, nodej];
+%         newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
+%         newBS(counter,:) = BONDSTIFFNESS(kBond,1);
+%    
+%     end
+%     
+%     if undeformedCoordinates(nodej,3) < 0.525 && undeformedCoordinates(nodei,3) > 0.525
+%         
+%         counter = counter + 1;
+%         newBL(counter,:) = [nodei, nodej];
+%         newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
+%         newBS(counter,:) = BONDSTIFFNESS(kBond,1);
+%         
+%     end
+    
+    if checkcheck == 1
         
         counter = counter + 1;
         newBL(counter,:) = [nodei, nodej];
@@ -234,9 +261,12 @@ for kBond = 1 : nBonds
         newBS(counter,:) = BONDSTIFFNESS(kBond,1);
         
     end
+        
 
         
 end
+
+
 
 
 totalEnergy = 0;
@@ -247,14 +277,14 @@ for kBond = 1 : size(newBL,1)
     nodei = newBL(kBond,1); % Node i
     nodej = newBL(kBond,2); % Node j
     
-    bondEnergy = 0.5 * ((bond.concrete.stiffness * s^2 * newUL(kBond,1))/2) * cellVolume^2;
+    bondEnergy = ((newBS(kBond) * s^2 * newUL(kBond,1))/2) * cellVolume^2; % newBS(kBond)   bond.concrete.stiffness
     totalEnergy = totalEnergy + bondEnergy;
 
     % Plot bond
     pt1 = [undeformedCoordinates(nodei,1), undeformedCoordinates(nodei,2), undeformedCoordinates(nodei,3)];
     pt2 = [undeformedCoordinates(nodej,1), undeformedCoordinates(nodej,2), undeformedCoordinates(nodej,3)];
     pts = [pt1; pt2]; % vertial concatenation
-    plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 1.5)
+    plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 0.75)
     hold on     
 
 end
@@ -263,8 +293,14 @@ x = max(undeformedCoordinates(:,1));
 y = max(undeformedCoordinates(:,2));
 z = max(undeformedCoordinates(:,3));
 plotcube([x y z],[0 0 0],0,1.5)
-
+set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
+set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
+xlabel('x', 'interpreter', 'latex')
+ylabel('y', 'interpreter', 'latex')
+zlabel('z', 'interpreter', 'latex')
 axis equal
+
+fprintf('Fracture energy: %.2f \n', totalEnergy/(0.05*1))
 
 %% Required functions
 function plotcube(varargin)
