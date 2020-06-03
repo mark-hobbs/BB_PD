@@ -70,13 +70,15 @@ for iTimeStep = timeStepTracker : nTimeSteps
     calculatedeformedlengthMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
     
     % Calculate bond softening factor for bilinear material model
-    [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch,bond.concrete.s0,bond.concrete.sc,flagBondSoftening,bondSofteningFactor,BONDTYPE);
+    % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.sc, flagBondSoftening, bondSofteningFactor, BONDTYPE);
+    [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
     
     % Determine if bonds have failed
-    calculatebondfailureMex(fail,failureFunctionality,BONDTYPE,stretch,bond.concrete.sc,bond.steel.sc);
+    % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, bond.concrete.sc, bond.steel.sc);
+    [fail] = calculatebondfailure_(fail, failureFunctionality, BONDTYPE, stretch, s0 * 25, bond.steel.sc); 
     
     % Calculate bond force for every bond
-    calculatebondforcesMex(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
+    calculatebondforcesMex(bForceX, bForceY, bForceZ, fail, deformedX, deformedY, deformedZ, deformedLength, stretch, stretchPlastic, BONDSTIFFNESS, cellVolume, VOLUMECORRECTIONFACTORS, bondSofteningFactor);
     
     % Calculate nodal force for every node
     nodalForce(:,:) = 0;     % Nodal force - initialise for every time step
@@ -86,7 +88,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     calculatenodalforcesopenmpMex(BONDLIST, nodalForce, bForceX, bForceY, bForceZ, nodalForceX, nodalForceY, nodalForceZ)
         
     % Time integration
-    [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement,deformedCoordinates);    
+    [nodalDisplacement, nodalVelocity, deformedCoordinates,~] = timeintegrationeulercromer(nodalForce, nodalDisplacement, nodalVelocity, DAMPING, DENSITY, CONSTRAINTFLAG, undeformedCoordinates, DT, BODYFORCEFLAG, config.loadingMethod, displacementIncrement, deformedCoordinates);    
 
     % Penetrator
     [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
@@ -99,7 +101,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     reactionForce = penetratorfz1;
     %reactionForce = supportfz1 + supportfz2;
     
-    CMOD = nodalDisplacement(25,1) - nodalDisplacement(10,1);
+    CMOD = nodalDisplacement(45,1) - nodalDisplacement(25,1);
     
     % Print output to text file
     printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD);

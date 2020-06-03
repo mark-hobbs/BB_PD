@@ -16,7 +16,7 @@ material.steel.E = 208e9;         % Young's modulus
 
 %------------------------- Fracture Energy --------------------------------
 
-material.concrete.fractureEnergy = 100;   % Fracture energy (N/m)
+material.concrete.fractureEnergy = 133;   % Fracture energy (N/m)
 material.steel.fractureEnergy = 12500;    % Fracture energy (N/m)
 
 

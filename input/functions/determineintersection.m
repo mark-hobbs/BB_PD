@@ -72,9 +72,12 @@ n = cross(AB,AD)/sqrt(dot(cross(AB,AD),cross(AB,AD)));
 
 checkcheck = 0;
 
-if check == 1
+% Check if a point is within a rectangle on a plane in 3D space
+% https://math.stackexchange.com/questions/476608/how-to-check-if-point-is-within-a-rectangle-on-a-plane-in-3d-space
+
+if check == 1 % The bond intersects the infinite plane
         
-    if ((dot(A,AB) <= dot(I,AB)) && (dot(I,AB) <= dot(B,AB))) && ((dot(A,AD) <= dot(I,AD)) && (dot(I,AD) <= dot(D,AD)))
+    if ((dot(A,AB) <= dot(I,AB)) && (dot(I,AB) <= dot(B,AB))) && ((dot(A,AD) <= dot(I,AD)) && (dot(I,AD) <= dot(D,AD))) % The bond intersects a segment of the plane
 
         checkcheck = 1;
 

@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(config)
+function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename, config)
 % newtonraphsonloadcontrolled - this function uses a standard
 % Newton-Rapshon procedure to solve the static peridynamic equation of
 % motion. Bond failure is not permitted with this method. 
@@ -27,7 +27,7 @@ function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(config
 % ---------------------------- BEGIN CODE ---------------------------------
 
 % Load the defined input file name                  
-load(config.inputdatafilename, config.dynamicsolverinputlist{:});
+load(inputdatafilename, config.dynamicsolverinputlist{:});
 
 % Initialise constants, arrays, and variables
 nNodes = size(undeformedCoordinates,1);
@@ -43,12 +43,13 @@ stretch = zeros(nBonds,1);
 % nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
 % counterLoadStep = 0;
 loadIncrementCounter = 0;
-startLoadMultiplier = 1 ;
+startLoadMultiplier = 0.1 ;
 finalLoadMultiplier = 1;
-incrementLoadMultiplier = 0.0025;
+incrementLoadMultiplier = 0.1;
 deformedCoordinates = undeformedCoordinates; % For the first iteration, deformedCoordinates is equal to undeformedCoordinates
 nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
 flagBondYield = zeros(nBonds,1);
+MAXBODYFORCE = -100000000;
 
 % Failure functionality
 
@@ -86,21 +87,20 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
     K = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,constrainedDOF);
     
     % Calculate the change in displacement (DELTA U)
-    deltaDisplacementVector = symmlq(K,deltaF,[],5000); % Using symmetric LQ method
+    deltaDisplacementVector = lsqr(K,deltaF,[],50000); % Using symmetric LQ method
     
     % Update nodal coordinates
     [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
 
     % Calculate bond stretch
     [~,~,~,~,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
-    %[~,~,~,stretch] = calculatedeformedlength2D(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,nBonds,BONDLIST);
     
     % Calculate plastic stretch for steel-steel bonds
     % [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
     % sum(flagBondYield)
     
     % Calculate bond failure
-    fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
+    fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,1,1);
     
     % Did any bonds fail or yield?
     [nBondsBrokenTotal,nBondsBrokenCurrentIteration] = trackbondfailure(nBonds,fail,nBondsBrokenTotalPreviousIteration);
@@ -111,10 +111,13 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
     % Check the convergence criteria
     [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);
     
-    fprintf('Displacement = %.6fmm \n', (deformedCoordinates(87,3) - undeformedCoordinates(87,3))*1000)
+    fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
+    
+    CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(15,1) - undeformedCoordinates(15,1));
+    fprintf('CMOD = %.6f mm \n', CMOD * 1000)
     
     damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-    plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates)*0, damage, 'damage')
+    plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates), damage, 'damage', 10, 1)
     drawnow
     
     % ------------------- START ITERATIVE PROCEDURE -----------------------

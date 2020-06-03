@@ -1,4 +1,4 @@
-function [globalRowIndex, globalColumnIndex, globalNonZeroValues,massVector] = buildstiffnessmatrixCSCformat(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,VOLUME,BONDSTIFFNESS,BFMULTIPLIER,fail)
+function [globalRowIndex, globalColumnIndex, globalNonZeroValues, massVector] = buildstiffnessmatrixCSCformat(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,VOLUME,BONDSTIFFNESS,BFMULTIPLIER,fail)
 % buildstiffnessmatrixCSCformat - This function builds the stiffness matrix
 % for the peridynamic member using the compressed sparse column (CSC)
 % format. The function returns three one-dimensional arrays that

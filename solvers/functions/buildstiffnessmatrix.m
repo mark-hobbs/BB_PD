@@ -55,7 +55,7 @@ NOD = size(nodalCoordinates, 2);
 
 %% Build the stiffness matrix using the compressed sparse column (CSC) format
 
-[globalRowIndex, globalColumnIndex, globalNonZeroValues] = buildstiffnessmatrixCSCformat_mex(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail);
+[globalRowIndex, globalColumnIndex, globalNonZeroValues, ~] = buildstiffnessmatrixCSCformat(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail);
 
 %% Create sparse global stiffness matrix
 

@@ -1,4 +1,4 @@
-function [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(supportCentre,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,X,Y,Z)
+function [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(supportCentre,DX,nDivX,nDivY,nDivZ,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,X,Y,Z)
 % buildsupports - build supports for simply supported members. Create a
 % triangular support with 3 rows of nodes at the top, 2 rows of nodes in
 % the middle, and 1 row of nodes at the apex. Define the support centre
@@ -37,12 +37,11 @@ function [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = bui
 
 % ---------------------------- BEGIN CODE ---------------------------------
 
-%% Load data
-datageometry
-
+%% Load and initialise data
 constraintFlagCounter = size(CONSTRAINTFLAG,1);
 materialFlagCounter = size(MATERIALFLAG,1);
 bodyforceFlagCounter = size(BODYFORCEFLAG,1);
+NOD = size(CONSTRAINTFLAG, 2);
 
 %% Main body of function
 

@@ -104,9 +104,9 @@ fprintf('Module 1: Create input data file \n')
 %% Geometry and Discretisation 
 
 member.NOD = 3;             % Number of degrees of freedom
-member.LENGTH = 0.350;        % x-axis (m) 
+member.LENGTH = 0.175;      % x-axis (m) 
 member.WIDTH = 0.05;        % y-axis (m) 
-member.DEPTH = 0.10;         % z-axis (m)
+member.DEPTH = 0.05;        % z-axis (m)
 
 DX = 5/1000;                        % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
@@ -126,7 +126,7 @@ fprintf('Length (x) = %.2fm \nDepth (y) = %.2fm \nWidth (z) = %.2fm \n', memberL
 fprintf('DX = %.4fm \n', DX)
 fprintf('nDivX = %.0f \nnDivY = %.0f \nnDivZ = %.0f \n', nDivX, nDivY, nDivZ)
 
-plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane ', 10, 0, 0)    % Plot undeformed nodes and check for errors
+plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane', 10, 0, 0)    % Plot undeformed nodes and check for errors
 plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
 
 %% FLAGS 
@@ -139,11 +139,16 @@ CONSTRAINTFLAG = zeros(nNodes, member.NOD);   % Create flag to identify constrai
 
 supportRadius = 5 * DX;
 searchRadius = 10.1 * DX;
-supportCentreX = [ (DX * (0.05/DX)) + DX , DX * (0.3/DX) ];
+supportCentreX = [ (DX * (0.025/DX)) , DX * (0.15/DX) ];
 supportCentreZ = - supportRadius + DX;
 supports(1) = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 supports(2) = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
-clear supportRadius searchRadius supportCentreX supportCentreZ
+
+% [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(supportCentreX(1,1),DX,nDivX,nDivY,nDivZ,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build first support
+% [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(supportCentreX(1,2),DX,nDivX,nDivY,nDivZ,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build second support
+% plotdiscretisedmember(undeformedCoordinates,MATERIALFLAG)
+
+clear supportRadius searchRadius supportCentreX supportCentreZ 
 
 %% Build rigid penetrator 
 
@@ -156,7 +161,16 @@ distanceX = undeformedCoordinates(penetrator.family,1) - penetrator.centre(:,1);
 distanceZ = undeformedCoordinates(penetrator.family,3) - penetrator.centre(:,2);
 distance = sqrt((distanceX .* distanceX) + (distanceZ .* distanceZ));
 penetrator.centre(1,2) = penetratorCentreZ - (min(distance) - penetratorRadius);    % correct penetrator centre-point
-clear penetratorRadius searchRadius penetratorCentreX penetratorCentreZ distanceX distanceZ distance
+
+for i = 1 : size(penetrator.family, 1)
+    
+    j = penetrator.family(i);
+    
+    BODYFORCEFLAG(j,3) = 1;
+        
+end
+
+clear penetratorRadius searchRadius penetratorCentreX penetratorCentreZ distanceX distanceZ distance i j
 
 %% Build node families 
 
@@ -196,6 +210,14 @@ bond.steel.sc = 1;
 
 % Calculate bond type and bond stiffness (plus stiffness correction)
 [BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bond.concrete.stiffness,bond.steel.stiffness,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
+
+G0 = 0.005339846 * 1000; % N/mm -> N/m
+
+for i = 1 : size(BONDLIST, 1)
+    
+    s0(i,1) = sqrt((10 * G0) / (pi * BONDSTIFFNESS(i,1) * horizon^5));
+        
+end
 
 %% Simulation Parameters
 

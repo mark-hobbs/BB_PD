@@ -210,21 +210,35 @@ bond.steel.sc = 1;
 
 nBonds = size(BONDLIST,1);
 counter = 0;
+figure
+
+totalEnergy = 0;
+s = 1.1974E-04;
 
 A = [0 0 0.525];
 B = [0 1 0.525];
-C = [0.05 1 0.525];
-D = [0.05 0 0.525];
+C = [0.025 1 0.525];
+D = [0.025 0 0.525];
 
-% A = [0.5 0 0.525];
-% B = [0.5 1 0.525];
-% C = [0.55 1 0.525];
-% D = [0.55 0 0.525];
+% A = [0.0251 0 0.525];
+% B = [0.0251 1 0.525];
+% C = [0.075 1 0.525];
+% D = [0.075 0 0.525];
+
+% A = [0.485 0 0.525];
+% B = [0.485 1 0.525];
+% C = [0.515 1 0.525];
+% D = [0.515 0 0.525];
 
 % A = [0 0 0.525];
 % B = [0 1 0.525];
 % C = [1 1 0.525];
 % D = [1 0 0.525];
+
+% A = [0.5 0.5 1.025];
+% B = [0.5 1.5 1.025];
+% C = [1.5 1.5 1.025];
+% D = [1.5 0.5 1.025];
 
 
 % Calculate the nodal force (N/m^3) for every node, iterate over the bond list
@@ -269,9 +283,6 @@ end
 
 
 
-totalEnergy = 0;
-s = 1.1974E-04;
-
 for kBond = 1 : size(newBL,1)
 
     nodei = newBL(kBond,1); % Node i
@@ -285,9 +296,18 @@ for kBond = 1 : size(newBL,1)
     pt2 = [undeformedCoordinates(nodej,1), undeformedCoordinates(nodej,2), undeformedCoordinates(nodej,3)];
     pts = [pt1; pt2]; % vertial concatenation
     plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 0.75)
+    
     hold on     
+    
 
 end
+
+fprintf('Fracture energy: %.2f \n', totalEnergy/(0.025*1))
+
+
+plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 4 )
+scatter3(undeformedCoordinates(newBL(:,1),1), undeformedCoordinates(newBL(:,1),2), undeformedCoordinates(newBL(:,1),3), 20, 'b', 'filled')
+scatter3(undeformedCoordinates(newBL(:,2),1), undeformedCoordinates(newBL(:,2),2), undeformedCoordinates(newBL(:,2),3), 20, 'b', 'filled')
 
 x = max(undeformedCoordinates(:,1));
 y = max(undeformedCoordinates(:,2));
@@ -295,12 +315,13 @@ z = max(undeformedCoordinates(:,3));
 plotcube([x y z],[0 0 0],0,1.5)
 set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
 set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
+% set(gca,'visible','off')
 xlabel('x', 'interpreter', 'latex')
 ylabel('y', 'interpreter', 'latex')
 zlabel('z', 'interpreter', 'latex')
 axis equal
 
-fprintf('Fracture energy: %.2f \n', totalEnergy/(0.05*1))
+
 
 %% Required functions
 function plotcube(varargin)
