@@ -1,4 +1,4 @@
-function [globalRowIndex, globalColumnIndex, globalNonZeroValues, massVector] = buildstiffnessmatrixCSCformat(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,VOLUME,BONDSTIFFNESS,BFMULTIPLIER,fail)
+function [globalRowIndex, globalColumnIndex, globalNonZeroValues, massVector] = buildstiffnessmatrixCSCformat(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,VOLUME,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,UNDEFORMEDLENGTH)
 % buildstiffnessmatrixCSCformat - This function builds the stiffness matrix
 % for the peridynamic member using the compressed sparse column (CSC)
 % format. The function returns three one-dimensional arrays that
@@ -123,13 +123,14 @@ elseif NOD == 3
             % *****************************************************************
             % Should bond length be set at the original undeformed length or
             % should it be updated after every load increment and iteration?
+            % UNDEFORMEDLENGTH(kBond)
             % *****************************************************************
             
             % What does this represent?
             % I think the 'handbook of peridynamic modelling' explains how to
             % derive this
             
-            rig = BFMULTIPLIER(kBond) * (BONDSTIFFNESS(kBond) / bondLength ^ 3) * VOLUMECORRECTIONFACTORS(kBond) * VOLUME ^ 2; %* (1 - omega)
+            rig = BFMULTIPLIER(kBond) * ((BONDSTIFFNESS(kBond) / bondLength ^ 3) * VOLUMECORRECTIONFACTORS(kBond) * VOLUME ^ 2) * (1 - bondSofteningFactor(kBond)); % 0.5 * 
             
             % Element stiffness matrix in global coordinates
             % T = [cx^2 cx*cy cx*cz; cx*cy cy^2 cy*cz; cx*cz cy*cz cz^2];

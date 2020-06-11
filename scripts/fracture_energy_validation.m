@@ -321,8 +321,6 @@ ylabel('y', 'interpreter', 'latex')
 zlabel('z', 'interpreter', 'latex')
 axis equal
 
-
-
 %% Required functions
 function plotcube(varargin)
 % PLOTCUBE - Display a 3D-cube in the current axes

@@ -1,4 +1,4 @@
-function [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, linearElasticLimit, criticalStretchConcrete, flagBondSoftening, bondSofteningFactor, BONDTYPE)
+function [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor_(stretch, linearElasticLimit, criticalStretchConcrete, flagBondSoftening, bondSofteningFactor, BONDTYPE)
 % calculatebondsofteningfactor - calculate the bond softening factor 
 %
 % Syntax: 

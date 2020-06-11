@@ -109,7 +109,8 @@ config.staticsolverinputlist = {'undeformedCoordinates'...     % (nNodes , NOD)
                                 'nTimeSteps'...                % (1 , 1)
                                 'DT'...                        % (1 , 1)
                                 'timeStepTracker'...           % (1 , 1)
-                                'equilibriumTolerance'};       % (1 , 1)
+                                'equilibriumTolerance'...      % (1 , 1)
+                                'bond'};                       % (structure)       
 
 % Static termination method
 

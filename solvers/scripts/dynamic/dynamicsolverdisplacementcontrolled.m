@@ -75,7 +75,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     
     % Determine if bonds have failed
     % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, bond.concrete.sc, bond.steel.sc);
-    [fail] = calculatebondfailure_(fail, failureFunctionality, BONDTYPE, stretch, s0 * 25, bond.steel.sc); 
+    [fail] = calculatebondfailure(fail, failureFunctionality, BONDTYPE, stretch, s0 * 25, bond.steel.sc); 
     
     % Calculate bond force for every bond
     calculatebondforcesMex(bForceX, bForceY, bForceZ, fail, deformedX, deformedY, deformedZ, deformedLength, stretch, stretchPlastic, BONDSTIFFNESS, cellVolume, VOLUMECORRECTIONFACTORS, bondSofteningFactor);
@@ -101,7 +101,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     reactionForce = penetratorfz1;
     %reactionForce = supportfz1 + supportfz2;
     
-    CMOD = nodalDisplacement(45,1) - nodalDisplacement(25,1);
+    CMOD = nodalDisplacement(25,1) - nodalDisplacement(15,1);
     
     % Print output to text file
     printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD);
