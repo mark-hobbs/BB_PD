@@ -13,7 +13,7 @@ function [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORREC
 % entries for each pair of nodes that interact directly, and is inherently
 % more dense than that of a local model. 
 %
-% Syntax: [Kglobal,Fext,unconstrainedDOF,constrainedDOF,appliedExternalForceIndex] = buildstiffnessmatrix(COORDINATES,BONDLIST,VOLUMECORRECTIONFACTORS,VOLUME,BONDSTIFFNESS,BFMULTIPLIER,CONSTRAINTFLAG,BODYFORCE,MAXBODYFORCE,fail)
+% Syntax: [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH)
 % [Kglobal,Kuu,Kuc] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,noapplieddisplacementDOF,UNDEFORMEDLENGTH,DISPLACEMENTFLAG)
 % Inputs:
 %   nodalCoordinates            - undeformed or deformed nodalCoordinates of all nodes (nNodes x NOD)
@@ -69,10 +69,10 @@ Kglobal(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
 
 % Kuu = Kglobal;
 % Kuc = Kglobal;
-
+% 
 % Kuu(constrainedDOF,:) = [];     % Discard rows of constrained nodal DOFs
 % Kuu(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
-
+% 
 % Kuc(noapplieddisplacementDOF,:) = [];     % Discard rows of unconstrained nodal DOFs
 % Kuc(:,noapplieddisplacementDOF) = [];     % Discard columns of unconstrained nodal DOFs
 

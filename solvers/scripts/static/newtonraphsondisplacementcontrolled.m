@@ -78,15 +78,15 @@ counter = 0;
 % Loop to incrementally increase the externally applied displacement
 for iTimeStep = 1 : nTimeSteps
     
-    %fprintf('\n\n')
+    fprintf('\n\n')
         
     counter = counter + 1;
                   
     % Apply displacement using a rigid penetrator. Determine new nodal
     % positions for nodes that lie within the rigid penetrator and flag
     % applied displacements
-    displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
-    [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
+    % displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
+    [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, -0.0000002, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
     
     if sum(sum(DISPLACEMENTFLAG)) == 0
         continue
@@ -131,15 +131,13 @@ for iTimeStep = 1 : nTimeSteps
     % Fint = Kuu * totalDisplacementVector;
     % Step 1: calculate bond forces
     [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
-    % Step 2: calculate nodal forces
     [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,0);
-    % Step 3: re-arrange into Fint vector
     nodalForce = nodalForce * cellVolume;
     Fint = reshape(nodalForce',[1 size(nodalForce,1) * size(nodalForce,2)])';
     Fint(constrainedDOF,:) = [];
         
     % Check the convergence criteria
-    [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);
+    [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,-Fint);
     
     fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
     
@@ -171,7 +169,7 @@ for iTimeStep = 1 : nTimeSteps
         [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);      
         
         % Calculate bond stretch
-        [~,~,~,~,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
+        [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
         
         % Calculate bond softening factor for bilinear material model
         [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
@@ -190,7 +188,7 @@ for iTimeStep = 1 : nTimeSteps
         Fint(constrainedDOF,:) = [];
         
         % Calculate the out of balance force vector and check the convergence criteria    
-        [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);      
+        [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,-Fint);      
         
         fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
     

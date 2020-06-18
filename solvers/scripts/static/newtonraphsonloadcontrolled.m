@@ -44,21 +44,18 @@ bForceZ = zeros(nBonds,1);
 stretch = zeros(nBonds,1);
 stretchPlastic = zeros(nBonds,1);
 nodalForce = zeros(nNodes, NOD);
-% displacedCoordinates = COORDINATES;       % For the first iteration, displacedCoordinates is equal to COORDINATES
 % nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
-% counterLoadStep = 0;
 loadIncrementCounter = 0;
 startLoadMultiplier = 0.1 ;
 finalLoadMultiplier = 10;
 incrementLoadMultiplier = 0.1;
-deformedCoordinates = undeformedCoordinates; % For the first iteration, deformedCoordinates is equal to undeformedCoordinates
-nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
+deformedCoordinates = undeformedCoordinates;    % For the first iteration, deformedCoordinates is equal to undeformedCoordinates
+nBondsBrokenTotalPreviousIteration = 0;         % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
 flagBondSoftening = zeros(nBonds,1);
 bondSofteningFactor = zeros(nBonds,1);
-MAXBODYFORCE = -10000000;
+MAXBODYFORCE = -500000000;
 
 % Failure functionality
-
 if strcmp(config.failureFunctionality ,'on')
     
     failureFunctionality = 0;
@@ -93,7 +90,7 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
     K = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH);
     
     % Calculate the change in displacement (DELTA U)
-    deltaDisplacementVector = lsqr(K,deltaF,[],50000); % Using symmetric LQ method or lsqr
+    [deltaDisplacementVector] = bicgstabl(K,deltaF,[],5000); % Using symmetric LQ method or lsqr
     
     % Update nodal coordinates
     [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
@@ -143,11 +140,11 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
         
         iterativeCounter = iterativeCounter + 1;
     
-        % Update the stiffness matrix
+        % Build the tangent stiffness matrix (update stiffness matrix)
         Ktangent = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH); 
         
         % Calculate the change in displacement (delta U)
-        deltaDisplacementVector = lsqr(Ktangent,g,[],5000); % Using symmetric LQ method or lsqr
+        [deltaDisplacementVector] = lsqr(Ktangent,g,[],5000); % Using symmetric LQ method or lsqr (Ktangent,g,[],5000)
         
         % Update nodal coordinates
         [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
