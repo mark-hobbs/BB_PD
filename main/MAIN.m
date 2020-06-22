@@ -79,7 +79,7 @@ elseif strcmp(config.solver,'static')
         % -----------------------------------------------------------------
     
         fprintf('Start static solver \n\n')
-        [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename, config);
+        [deformedCoordinates,fail,stretch] = newtonraphsondisplacementcontrolled(inputdatafilename, config);
     
         %------------------------------------------------------------------
         % Static Displacement-Controlled

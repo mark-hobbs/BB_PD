@@ -139,7 +139,7 @@ CONSTRAINTFLAG = zeros(nNodes, member.NOD);   % Create flag to identify constrai
 
 supportRadius = 5 * DX;
 searchRadius = 10.1 * DX;
-supportCentreX = [ (DX * (0.025/DX)) , DX * (0.15/DX) ];
+supportCentreX = [ (DX * (0.025/DX)) , DX * (0.15/DX) + DX ];
 supportCentreZ = - supportRadius + DX;
 supports(1) = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 supports(2) = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
@@ -211,11 +211,17 @@ bond.steel.sc = 1;
 
 % G0 = 0.005339846 * 1000; % N/mm -> N/m
 % 
-% for i = 1 : size(BONDLIST, 1)
-%     
-%     s0(i,1) = sqrt((10 * G0) / (pi * BONDSTIFFNESS(i,1) * horizon^5));
-%         
-% end
+for i = 1 : size(BONDLIST, 1)
+    
+    % s0(i,1) = sqrt((10 * G0) / (pi * BONDSTIFFNESS(i,1) * horizon^5));
+    
+    beta = 0.25;
+    gamma = (2 + 2 * beta) / (2 * beta * (1 - beta));
+    s0 = 9.4595E-05;
+    sc(i,1) = (10 * gamma * material.concrete.fractureEnergy) / (pi * horizon^5 * BONDSTIFFNESS(i,1) * s0 * (1 + gamma * beta)) + s0;
+    s1(i,1) = (sc(i,1) - s0) /  gamma + s0;
+        
+end
 
 %% Build half or fifth-notch
 

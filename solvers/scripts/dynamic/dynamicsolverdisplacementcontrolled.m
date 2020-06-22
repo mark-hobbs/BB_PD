@@ -72,11 +72,11 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % Calculate bond softening factor for bilinear material model
     % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.sc, flagBondSoftening, bondSofteningFactor, BONDTYPE);
     % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
-    [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, 9.4595E-05, 7.0164E-04, 5.7603E-03, bondSofteningFactor, BONDTYPE, flagBondSoftening);
+    [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, 9.4595E-05, s1, sc, bondSofteningFactor, BONDTYPE, flagBondSoftening);
     
     % Determine if bonds have failed
     % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, bond.concrete.sc, bond.steel.sc);
-    [fail] = calculatebondfailure(fail, failureFunctionality, BONDTYPE, stretch, bond.concrete.sc, bond.steel.sc); 
+    [fail] = calculatebondfailure(fail, failureFunctionality, BONDTYPE, stretch, 5.7603E-03, bond.steel.sc); 
     
     % Calculate bond force for every bond
     calculatebondforcesMex(bForceX, bForceY, bForceZ, fail, deformedX, deformedY, deformedZ, deformedLength, stretch, stretchPlastic, BONDSTIFFNESS, cellVolume, VOLUMECORRECTIONFACTORS, bondSofteningFactor);
@@ -102,7 +102,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     reactionForce = penetratorfz1;
     %reactionForce = supportfz1 + supportfz2;
     
-    CMOD = nodalDisplacement(25,1) - nodalDisplacement(15,1);
+    CMOD = nodalDisplacement(25*5,1) - nodalDisplacement(15*5,1);
     
     % Print output to text file
     printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD);

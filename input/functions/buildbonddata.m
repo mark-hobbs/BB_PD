@@ -48,7 +48,7 @@ for kBond = 1 : nBonds
     nodeiNeighbourhoodVolume = nFAMILYMEMBERS(nodei) * cellVolume;                                              % Neighbourhood area/volume for Node 'i'
     nodejNeighbourhoodVolume = nFAMILYMEMBERS(nodej) * cellVolume;                                              % Neighbourhood area/volume for Node 'j'
     stiffeningFactor = (2 * neighbourhoodVolume) / ((nodeiNeighbourhoodVolume + nodejNeighbourhoodVolume));     % Calculate stiffening correction factor - should the following be included: * VOLUMECORRECTIONFACTORS(kBond));  
-    BONDSTIFFNESS(kBond) = stiffeningFactor * bondStiffnessTemp ;                                               % Correct the bond stiffness
+    BONDSTIFFNESS(kBond) = stiffeningFactor * bondStiffnessTemp;                                               % Correct the bond stiffness
 
 end
 

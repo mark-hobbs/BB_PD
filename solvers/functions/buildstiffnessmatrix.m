@@ -1,4 +1,4 @@
-function [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH)
+function  [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH)
 % buildstiffnessmatrix - This code is based on Algorithm A.2 from
 % 'Structural Material Damage: Novel Methods of Analysis' and David
 % Miranda's code for calculation of the stiffness/tangent matrix for BB PD
@@ -14,7 +14,7 @@ function [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORREC
 % more dense than that of a local model. 
 %
 % Syntax: [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH)
-% [Kglobal,Kuu,Kuc] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,noapplieddisplacementDOF,UNDEFORMEDLENGTH,DISPLACEMENTFLAG)
+%
 % Inputs:
 %   nodalCoordinates            - undeformed or deformed nodalCoordinates of all nodes (nNodes x NOD)
 %   BONDLIST
@@ -64,17 +64,8 @@ Kglobal = sparse(globalRowIndex, globalColumnIndex, globalNonZeroValues, nNodes 
 %% Reduce the stiffness matrix (application of boundary conditions)
 % Remove columns and rows corresponding to known values (constrained DOFs)
 
-Kglobal(constrainedDOF,:) = [];     % Discard rows of constrained nodal DOFs
-Kglobal(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
-
-% Kuu = Kglobal;
-% Kuc = Kglobal;
-% 
-% Kuu(constrainedDOF,:) = [];     % Discard rows of constrained nodal DOFs
-% Kuu(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
-% 
-% Kuc(noapplieddisplacementDOF,:) = [];     % Discard rows of unconstrained nodal DOFs
-% Kuc(:,noapplieddisplacementDOF) = [];     % Discard columns of unconstrained nodal DOFs
+% Kglobal(constrainedDOF,:) = [];     % Discard rows of constrained nodal DOFs
+% Kglobal(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
 
 % ------------------------- END CODE --------------------------------------
 

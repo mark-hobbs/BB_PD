@@ -27,7 +27,7 @@ config.materialModel.interface = 'linear';      % (linear / bilinear)
 % -------------------------------------------------------------------------
 
 % Solver (dynamic/static)
-config.solver = 'dynamic';
+config.solver = 'static';
 
 % -------------------------------------------------------------------------
 % General Solver Configuration
@@ -64,6 +64,8 @@ config.dynamicsolverinputlist = {'undeformedCoordinates'...    % (nNodes , NOD)
                                 'BONDTYPE'...                  % (nBonds , 1)
                                 'VOLUMECORRECTIONFACTORS'...   % (nBonds , 1)
                                 's0'...                        % (nBonds , 1)
+                                's1'...                        % (nBonds , 1)
+                                'sc'...                        % (nBonds , 1)
                                 'cellVolume'...                % (1 , 1)
                                 'DX'...                        % (1 , 1)
                                 'DAMPING'...                   % (1 , 1)

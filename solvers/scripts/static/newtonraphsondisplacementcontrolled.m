@@ -51,6 +51,8 @@ bForceY = zeros(nBonds,1);
 bForceZ = zeros(nBonds,1);
 stretchPlastic = zeros(nBonds,1);
 nodalForce = zeros(nNodes, NOD);
+DISPLACEMENTFLAG = zeros(nNodes,NOD);
+MAXBODYFORCE = 0;
 
 % Failure functionality
 
@@ -71,7 +73,7 @@ end
 % startFext = buildexternalforcevector(BODYFORCEFLAG,MAXBODYFORCE,cellVolume,constrainedDOF);
 
 Fext = zeros(nNodes * NOD, 1);      % Internal force vector (nNodes x NOD, 1)
-Fext(constrainedDOF,:) = [];
+Fext(constrainedDOF,:) = [];   
 
 % ------------------- START DISPLACEMENT INCREMENT ------------------------
 counter = 0;
@@ -86,35 +88,62 @@ for iTimeStep = 1 : nTimeSteps
     % positions for nodes that lie within the rigid penetrator and flag
     % applied displacements
     % displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
-    [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, -0.0000002, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
+    % [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, -0.0000002*counter, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
     
-    if sum(sum(DISPLACEMENTFLAG)) == 0
-        continue
+    for i = 1 : nNodes
+      
+        if BODYFORCEFLAG(i,3) == 1
+        
+            DISPLACEMENTFLAG(i,3) = 1;      
+            nodalDisplacement(i,3) = nodalDisplacement(i,3) + ( -0.0000001 * counter );
+        
+        end
+        
     end
     
     % Boundary conditions - determine the constrained and unconstrained DOFs
     [applieddisplacementDOF, noapplieddisplacementDOF] = buildconstrainedDOF(DISPLACEMENTFLAG);
     
     % Calculate the global stiffness matrix
-    [~,Kuu,Kuc] = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,noapplieddisplacementDOF,UNDEFORMEDLENGTH);
+    [K] = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH);
+    
+    % Build the constraint matrix
+    [C] = buildconstraintmatrix(nNodes, NOD, applieddisplacementDOF, constrainedDOF);
+    
+    % Build the reduced stiffness matrix;
+    Kuu = (C' * K) * C;
+    
+    % Build the right-hand side of the system
+    u = reshape(nodalDisplacement',[1 size(nodalDisplacement,1) * size(nodalDisplacement,2)])';
+    effectiveForceVec = (-C' * K) * u;
     
     % The prescribed displacements must be incorporated into the external
     % force vector
     
     % Determine the effective force   
-    u = reshape(nodalDisplacement',[1 size(nodalDisplacement,1) * size(nodalDisplacement,2)])';
-    u(noapplieddisplacementDOF,:) = [];
-    localeffectiveF = Kuc * u;
+      
+    %localeffectiveF = K * u;      % The effective force vector is not equivalent with the prescribed displacements. Why!?
     
+
     % Build global effective force vector
-    [Fext] = buildeffectiveforcevector(nNodes, NOD, localeffectiveF, applieddisplacementDOF, constrainedDOF, Fext);
-            
+    % [Fext] = buildeffectiveforcevector(nNodes, NOD, localeffectiveF, applieddisplacementDOF, constrainedDOF, Fext);
+         
     % Calculate the change in displacement (DELTA U)
-    deltaDisplacementVector = lsqr(Kuu,Fext,[],50000);      % Using symmetric LQ method or lsqr
+    deltaDisplacementVector = bicgstabl(Kuu,effectiveForceVec,[],100);
     
     % Update nodal coordinates
-    [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
+    %[deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
 
+    U = C * deltaDisplacementVector;
+    U(applieddisplacementDOF,:) = -0.0000001 * counter;
+    deltaDisplacement = reshape(U,NOD,[])';                            % Re-shape (nNodes, NOD)
+    deformedCoordinates = deformedCoordinates + deltaDisplacement;     % Update coordinates
+    
+    K(constrainedDOF,:) = [];
+    K(:,constrainedDOF) = [];
+    U(constrainedDOF) = [];
+    Fext = K * U;
+    
     % Calculate bond stretch
     [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
     
@@ -127,8 +156,7 @@ for iTimeStep = 1 : nTimeSteps
     % Did any bonds fail or yield?
     [nBondsBrokenTotal,nBondsBrokenCurrentIteration] = trackbondfailure(nBonds,fail,nBondsBrokenTotalPreviousIteration);
         
-    % Calculate the internal force vector (is this formula correct?)
-    % Fint = Kuu * totalDisplacementVector;
+    % Calculate the internal force vector
     % Step 1: calculate bond forces
     [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
     [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,0);
@@ -204,8 +232,9 @@ for iTimeStep = 1 : nTimeSteps
     % ------------------- END ITERATIVE PROCEDURE -------------------------
     
     
-    Fext = Fint;
+    %Fext = Fint;
     nBondsBrokenTotalPreviousIteration = nBondsBrokenTotal;
+    nodalDisplacement = deformedCoordinates - undeformedCoordinates;
 
     % Save and plot results at the end of every load increment
     

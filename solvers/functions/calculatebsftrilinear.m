@@ -39,23 +39,25 @@ function [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretc
 
 nBonds = size(BONDTYPE, 1);
 beta = 0.25;
-eta = s1/s0;
+
 bsf = zeros(nBonds, 1);
 
 for kBond = 1 : nBonds
+    
+    eta = s1(kBond,1) / s0;
 
     if BONDTYPE(kBond, 1) == 0
 
-        if (s0 < stretch(kBond)) && (stretch(kBond) <= s1)
+        if (s0 < stretch(kBond)) && (stretch(kBond) <= s1(kBond))
 
             bsf(kBond,1) = 1 - ( (eta - beta) / (eta - 1) * (s0 / stretch(kBond)) ) + ( (1 - beta) / (eta - 1) ); 
             flagBondSoftening(kBond) = 1;
             
-        elseif (s1 < stretch(kBond)) && (stretch(kBond) <= sc)
+        elseif (s1(kBond) < stretch(kBond)) && (stretch(kBond) <= sc(kBond))
 
-            bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc - stretch(kBond)) / (sc - s1) );
+            bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc(kBond) - stretch(kBond)) / (sc(kBond) - s1(kBond)) );
             
-        elseif (stretch(kBond) > sc)
+        elseif (stretch(kBond) > sc(kBond))
             
             
             bsf(kBond,1) = 1;

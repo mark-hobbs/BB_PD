@@ -18,9 +18,9 @@ clc
 %% Geometry and Discretisation 
 
 member.NOD = 3;          % Number of degrees of freedom
-member.LENGTH = 1;       % x-axis (m) 
-member.WIDTH = 1;        % y-axis (m) 
-member.DEPTH = 1;        % z-axis (m)
+member.LENGTH = 2;       % x-axis (m) 
+member.WIDTH = 2;        % y-axis (m) 
+member.DEPTH = 2;        % z-axis (m)
 
 DX = 50/1000;                       % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
@@ -215,10 +215,10 @@ figure
 totalEnergy = 0;
 s = 1.1974E-04;
 
-A = [0 0 0.525];
-B = [0 1 0.525];
-C = [0.025 1 0.525];
-D = [0.025 0 0.525];
+% A = [0 0 0.525];
+% B = [0 1 0.525];
+% C = [0.025 1 0.525];
+% D = [0.025 0 0.525];
 
 % A = [0.0251 0 0.525];
 % B = [0.0251 1 0.525];
@@ -235,10 +235,10 @@ D = [0.025 0 0.525];
 % C = [1 1 0.525];
 % D = [1 0 0.525];
 
-% A = [0.5 0.5 1.025];
-% B = [0.5 1.5 1.025];
-% C = [1.5 1.5 1.025];
-% D = [1.5 0.5 1.025];
+A = [0.5 0.5 1.025];
+B = [0.5 1.5 1.025];
+C = [1.5 1.5 1.025];
+D = [1.5 0.5 1.025];
 
 
 % Calculate the nodal force (N/m^3) for every node, iterate over the bond list
@@ -248,24 +248,6 @@ for kBond = 1 : nBonds
     nodej = BONDLIST(kBond,2); % Node j
     
     [checkcheck] = determineintersection(A, B, C, D, undeformedCoordinates(nodei,:), undeformedCoordinates(nodej,:));
-    
-%     if undeformedCoordinates(nodei,3) < 0.525 && undeformedCoordinates(nodej,3) > 0.525
-%         
-%         counter = counter + 1;
-%         newBL(counter,:) = [nodei, nodej];
-%         newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
-%         newBS(counter,:) = BONDSTIFFNESS(kBond,1);
-%    
-%     end
-%     
-%     if undeformedCoordinates(nodej,3) < 0.525 && undeformedCoordinates(nodei,3) > 0.525
-%         
-%         counter = counter + 1;
-%         newBL(counter,:) = [nodei, nodej];
-%         newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
-%         newBS(counter,:) = BONDSTIFFNESS(kBond,1);
-%         
-%     end
     
     if checkcheck == 1
         
@@ -279,8 +261,6 @@ for kBond = 1 : nBonds
 
         
 end
-
-
 
 
 for kBond = 1 : size(newBL,1)
@@ -302,12 +282,12 @@ for kBond = 1 : size(newBL,1)
 
 end
 
-fprintf('Fracture energy: %.2f \n', totalEnergy/(0.025*1))
+fprintf('Fracture energy: %.2f \n', totalEnergy/(1*1))
 
 
-plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 4 )
-scatter3(undeformedCoordinates(newBL(:,1),1), undeformedCoordinates(newBL(:,1),2), undeformedCoordinates(newBL(:,1),3), 20, 'b', 'filled')
-scatter3(undeformedCoordinates(newBL(:,2),1), undeformedCoordinates(newBL(:,2),2), undeformedCoordinates(newBL(:,2),3), 20, 'b', 'filled')
+% plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 4 )
+% scatter3(undeformedCoordinates(newBL(:,1),1), undeformedCoordinates(newBL(:,1),2), undeformedCoordinates(newBL(:,1),3), 20, 'b', 'filled')
+% scatter3(undeformedCoordinates(newBL(:,2),1), undeformedCoordinates(newBL(:,2),2), undeformedCoordinates(newBL(:,2),3), 20, 'b', 'filled')
 
 x = max(undeformedCoordinates(:,1));
 y = max(undeformedCoordinates(:,2));
