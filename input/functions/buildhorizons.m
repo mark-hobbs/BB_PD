@@ -72,6 +72,10 @@ for kNode = 1 : nNodes
         
         end
         
+        % Create a vector (nNodes x 1) to store the approximate volume of
+        % every node horizon
+        
+        
     end
     
 end

@@ -89,13 +89,13 @@ for iTimeStep = 1 : nTimeSteps
     % applied displacements
     % displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
     % [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, -0.0000002*counter, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
-    
+       
     for i = 1 : nNodes
       
         if BODYFORCEFLAG(i,3) == 1
         
             DISPLACEMENTFLAG(i,3) = 1;      
-            nodalDisplacement(i,3) = nodalDisplacement(i,3) + ( -0.0000001 * counter );
+            nodalDisplacement(i,3) = - 0.0000005 * counter;
         
         end
         
@@ -120,24 +120,19 @@ for iTimeStep = 1 : nTimeSteps
     % The prescribed displacements must be incorporated into the external
     % force vector
     
-    % Determine the effective force   
-      
-    %localeffectiveF = K * u;      % The effective force vector is not equivalent with the prescribed displacements. Why!?
-    
-
-    % Build global effective force vector
-    % [Fext] = buildeffectiveforcevector(nNodes, NOD, localeffectiveF, applieddisplacementDOF, constrainedDOF, Fext);
-         
+    % Determine the effective force         
+        
     % Calculate the change in displacement (DELTA U)
     deltaDisplacementVector = bicgstabl(Kuu,effectiveForceVec,[],100);
     
     % Update nodal coordinates
-    %[deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
-
     U = C * deltaDisplacementVector;
-    U(applieddisplacementDOF,:) = -0.0000001 * counter;
+    U(applieddisplacementDOF,:) = - 0.0000005;
     deltaDisplacement = reshape(U,NOD,[])';                            % Re-shape (nNodes, NOD)
-    deformedCoordinates = deformedCoordinates + deltaDisplacement;     % Update coordinates
+    deformedCoordinates = deformedCoordinates + deltaDisplacement;     % Update coordinates <------------- LOOK AT THIS!
+    
+    nodalDisplacement = deformedCoordinates - undeformedCoordinates;
+    U = reshape(nodalDisplacement',[1 size(nodalDisplacement,1) * size(nodalDisplacement,2)])';
     
     K(constrainedDOF,:) = [];
     K(:,constrainedDOF) = [];
@@ -188,9 +183,11 @@ for iTimeStep = 1 : nTimeSteps
         iterativeCounter = iterativeCounter + 1;
     
         % Update the stiffness matrix
-        [~,Ktangent,~] = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,noapplieddisplacementDOF,UNDEFORMEDLENGTH);
+        Ktangent = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH);
         
         % Calculate the change in displacement (delta U)
+        Ktangent(constrainedDOF,:) = [];
+        Ktangent(:,constrainedDOF) = [];
         deltaDisplacementVector = lsqr(Ktangent,g,[],5000);        % Using symmetric LQ method or lsqr
         
         % Update nodal coordinates

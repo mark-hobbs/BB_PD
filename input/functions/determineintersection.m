@@ -35,7 +35,7 @@ function [checkcheck] = determineintersection(A, B, C, D, nodei, nodej)
 % C = [0.01 0.01 0.525];
 % D = [0.01 0 0.525];
 % nodei = [0.005 0.005 0.55];
-% nodej = [0.005 0.005 0.52];
+% nodej = [0.005 0.005 0.525];
 
 % %    x  y  z
 % A = [0 0 0];

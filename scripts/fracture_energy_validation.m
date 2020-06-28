@@ -20,9 +20,9 @@ clc
 member.NOD = 3;          % Number of degrees of freedom
 member.LENGTH = 2;       % x-axis (m) 
 member.WIDTH = 2;        % y-axis (m) 
-member.DEPTH = 2;        % z-axis (m)
+member.DEPTH = 0.5;        % z-axis (m)
 
-DX = 50/1000;                       % Spacing between material points (mm)
+DX = 25/1000;                       % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
 nDivY = round(member.WIDTH/DX);     % Number of divisions in y-direction    
 nDivZ = round(member.DEPTH/DX);     % Number of divisions in z-direction   
@@ -47,231 +47,116 @@ MATERIALFLAG = zeros(nNodes, 1);
 
 %% Build node families 
 
-% Improve spatial localtiy of data (space filling curve ordering of particles)
-
-horizon = pi * DX; % Be consistent - this is also known as the horizonRadius
+horizon = pi * DX; 
 
 % Build node families, bond lists, and determine undeformed length of every bond
-[nFAMILYMEMBERS,NODEFAMILYPOINTERS,NODEFAMILY,BONDLIST,UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates,horizon);
+[nFAMILYMEMBERS, NODEFAMILYPOINTERS, NODEFAMILY, BONDLIST, UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates, horizon);
 
 %% Volume correction factors 
 
 % Calculate volume correction factors to improve the accuracy of spatial
 % integration
-VOLUMECORRECTIONFACTORS = calculatevolumecorrectionfactors(UNDEFORMEDLENGTH,horizon,RADIJ);
+VOLUMECORRECTIONFACTORS = calculatevolumecorrectionfactors(UNDEFORMEDLENGTH, horizon, RADIJ);
 
 %% Material properies 
 
-datamaterialproperties      % Load material properties
+%----------------------------- Density ------------------------------------
+
+material.concrete.density = 2400;     % Density concrete (kg/m^3)
+
+%------------------------- Young's Modulus --------------------------------
+
+material.concrete.E = 30E9;       % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
+
+%------------------------- Fracture Energy --------------------------------
+
+material.concrete.fractureEnergy = 100;   % Fracture energy (N/m)
 
 %% Peridynamic parameters 
 
 neighbourhoodVolume = (4/3) * pi * horizon^3;   % Neighbourhood volume for node contained within material bulk
 
 bond.concrete.stiffness = (12 * material.concrete.E) / (pi * horizon^4);    % Bond stiffness 3D
-bond.steel.stiffness = (12 * material.steel.E) / (pi * horizon^4);          % Bond stiffness 3D
 
-bond.concrete.s0 = 8.75009856494892E-05;  % constitutive law
-bond.concrete.sc = 2.18752464123723E-03;
-bond.steel.sc = 1;
+bond.concrete.s0 = sqrt( (5 * material.concrete.fractureEnergy) / (6 * material.concrete.E  * horizon) );  % constitutive law
+% bond.concrete.s0 = sqrt( (10 * material.concrete.fractureEnergy) / (pi * bond.concrete.stiffness  * horizon^5) );  % constitutive law
 
 %% Bond stiffness correction (surface effects)
 
 % Calculate bond type and bond stiffness (plus stiffness correction)
-[BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bond.concrete.stiffness,bond.steel.stiffness,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
-
-%% Determine numerically the energy per unit fracture area for complete seperation of a peridyamic body
-
-% kNode = 1313; % 1313 2722
-% %family(1,1) = kNode;
-% pt0 = [undeformedCoordinates(kNode,1), undeformedCoordinates(kNode,2), undeformedCoordinates(kNode,3)];
-% counter = 0;
-% figure 
-% 
-% % Iterate over all family members of Node 'k'
-% for kFamilyMember = 1 : nFAMILYMEMBERS(kNode)
-% 
-%     counter = counter + 1;
-%     
-%     % Consider bond between Node 'k' and Node 'familyMember' 
-%     family(counter,1) = NODEFAMILY(NODEFAMILYPOINTERS(kNode) + (kFamilyMember - 1),1);
-%     
-%     % Plot bond
-%     pt2 = [undeformedCoordinates(family(counter,1),1), undeformedCoordinates(family(counter,1),2), undeformedCoordinates(family(counter,1),3)];
-%     pts = [pt0; pt2]; % vertial concatenation 
-%     plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 1.5)
-%     hold on
-%     
-% end
-% 
-% scatter3(undeformedCoordinates(family,1), undeformedCoordinates(family,2), undeformedCoordinates(family,3), 50, 'b', 'filled')
-% xlabel('x (1)')
-% ylabel('y (2)')
-% zlabel('z (3)')
-% axis equal
-% 
-% % x = max(undeformedCoordinates(:,1));
-% % y = max(undeformedCoordinates(:,2));
-% % z = max(undeformedCoordinates(:,3));
-% % plotcube([x y z],[0 0 0],0,1.5)
-% 
-% % Determine collinear particles. See 'Bond-based peridynamic modelling of
-% % singular and nonsingular crack tip files'
-% 
-% % Calculate distance between penetrator centre and nodes in penetrator family
-% distanceX = undeformedCoordinates(family,1) - undeformedCoordinates(kNode,1);
-% distanceY = undeformedCoordinates(family,2) - undeformedCoordinates(kNode,2);
-% distanceZ = undeformedCoordinates(family,3) - undeformedCoordinates(kNode,3);
-% 
-% counter = 0;
-% for i = 1 : size(family,1)
-%     if distanceX(i,1) == 0 && distanceY(i,1) == 0 && undeformedCoordinates(family(i,1),3) < undeformedCoordinates(kNode,3)
-%         counter = counter + 1;  
-%         familyCollinear(counter,1) = family(i,1); 
-%     end
-% end
-% 
-% 
-% FAMILYORIGIN = kNode;
-% FAMILY = family;
-% 
-% count = size(FAMILYORIGIN,1);
-% COUNT = size(FAMILY,1);
-% figure
-% for i = 1 : size(familyCollinear,1)
-%     
-%     kNode = familyCollinear(i,1);
-%     family = [];
-%     family(1,1) = kNode;
-%     counter = 1;
-%     count = count + 1;
-%     FAMILYORIGIN(count,1) = kNode;
-%     
-%     for kFamilyMember = 1 : nFAMILYMEMBERS(kNode)
-%        
-%         counter = counter + 1;
-%         COUNT = COUNT + 1;
-% 
-%         % Consider bond between Node 'k' and Node 'familyMember' 
-%         family(counter,1) = NODEFAMILY(NODEFAMILYPOINTERS(kNode) + (kFamilyMember - 1),1);
-%         FAMILY(COUNT,1) = family(counter,1);
-% 
-%         % Plot bond
-%         pt1 = [undeformedCoordinates(kNode,1), undeformedCoordinates(kNode,2), undeformedCoordinates(kNode,3)];
-%         pt2 = [undeformedCoordinates(family(counter,1),1), undeformedCoordinates(family(counter,1),2), undeformedCoordinates(family(counter,1),3)];
-%         pts = [pt1; pt2]; % vertial concatenation
-%         plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 1.5)
-%         scatter3(undeformedCoordinates(family,1), undeformedCoordinates(family,2), undeformedCoordinates(family,3), 20, 'b', 'filled')
-%         hold on     
-%                 
-%     end
-%            
-% end
-% 
-% axis equal
-% 
-% 
-% figure
-% counter = 0;
-% 
-% for i = 1 : size(FAMILYORIGIN,1)
-%     
-%     for kFamilyMember = 1 : nFAMILYMEMBERS(kNode)
-%         
-%         counter = counter + 1;
-%        
-%         nodei = FAMILYORIGIN(i,1);
-%         nodej = FAMILY(counter,1);
-% 
-%         % Plot bond
-%         pt1 = [undeformedCoordinates(nodei,1), undeformedCoordinates(nodei,2), undeformedCoordinates(nodei,3)];
-%         pt2 = [undeformedCoordinates(nodej,1), undeformedCoordinates(nodej,2), undeformedCoordinates(nodej,3)];
-%         pts = [pt1; pt2]; % vertial concatenation
-%         
-%         if pt2(1,3) > pt0(1,3)
-%             plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 1.5)
-%         end
-%         
-%         hold on     
-%            
-%     end
-%            
-% end
-% 
-% x = max(undeformedCoordinates(:,1));
-% y = max(undeformedCoordinates(:,2));
-% z = max(undeformedCoordinates(:,3));
-% plotcube([x y z],[0 0 0],0,1.5)
-% 
-% %scatter3(undeformedCoordinates(family,1), undeformedCoordinates(family,2), undeformedCoordinates(family,3), 20, 'b', 'filled')
-% axis equal
+[BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER,stiffeningFactor] = buildbonddata(BONDLIST, nFAMILYMEMBERS, MATERIALFLAG, bond.concrete.stiffness, 1, cellVolume, neighbourhoodVolume, VOLUMECORRECTIONFACTORS);
 
 %% Determine numerically the energy per unit fracture area for complete seperation of a unit cube
 
 nBonds = size(BONDLIST,1);
 counter = 0;
-figure
-
 totalEnergy = 0;
-s = 1.1974E-04;
+totalEnergySC = 0;
+tol = 0.0;         % tolerance
 
 % A = [0 0 0.525];
 % B = [0 1 0.525];
 % C = [0.025 1 0.525];
 % D = [0.025 0 0.525];
 
-% A = [0.0251 0 0.525];
-% B = [0.0251 1 0.525];
+% A = [0.025 0 0.525];
+% B = [0.025 1 0.525];
 % C = [0.075 1 0.525];
 % D = [0.075 0 0.525];
-
-% A = [0.485 0 0.525];
-% B = [0.485 1 0.525];
-% C = [0.515 1 0.525];
-% D = [0.515 0 0.525];
 
 % A = [0 0 0.525];
 % B = [0 1 0.525];
 % C = [1 1 0.525];
 % D = [1 0 0.525];
 
-A = [0.5 0.5 1.025];
-B = [0.5 1.5 1.025];
-C = [1.5 1.5 1.025];
-D = [1.5 0.5 1.025];
+plane_depth = 0.25 + (DX/2);
+
+A = [0.5 - tol 0.5 - tol plane_depth];
+B = [0.5 - tol 1.5 + tol plane_depth];
+C = [1.5 + tol 1.5 + tol plane_depth];
+D = [1.5 + tol 0.5 - tol plane_depth];
 
 
-% Calculate the nodal force (N/m^3) for every node, iterate over the bond list
+% Check and flag if a bond intersects with the defined 2D plane
+
 for kBond = 1 : nBonds
     
     nodei = BONDLIST(kBond,1); % Node i
     nodej = BONDLIST(kBond,2); % Node j
     
-    [checkcheck] = determineintersection(A, B, C, D, undeformedCoordinates(nodei,:), undeformedCoordinates(nodej,:));
+    [intersection] = determineintersection(A, B, C, D, undeformedCoordinates(nodei,:), undeformedCoordinates(nodej,:));
     
-    if checkcheck == 1
+    if intersection == 1
         
         counter = counter + 1;
-        newBL(counter,:) = [nodei, nodej];
-        newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
-        newBS(counter,:) = BONDSTIFFNESS(kBond,1);
+        
+        bondEnergy = ( (bond.concrete.stiffness * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;
+        bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;
+        totalEnergy = totalEnergy + bondEnergy;
+        totalEnergySC = totalEnergySC + bondEnergySC;
+     
+        reducedBL(counter,:) = [nodei, nodej];
+        reducedUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
+        reducedBS(counter,:) = BONDSTIFFNESS(kBond,1);
         
     end
-        
-
-        
+                
 end
+   
+area = 1^2;
+fprintf('Fracture energy without surface corrections: %.2f \n', totalEnergy/area)
+fprintf('Fracture energy with surface corrections: %.2f \n', totalEnergySC/area)  
 
+%% Plot bonds that cross the defined 2D plane
 
-for kBond = 1 : size(newBL,1)
+figure
 
-    nodei = newBL(kBond,1); % Node i
-    nodej = newBL(kBond,2); % Node j
+for kBond = 1 : size(reducedBL,1)
+
+    nodei = reducedBL(kBond,1); % Node i
+    nodej = reducedBL(kBond,2); % Node j
+     
     
-    bondEnergy = ((newBS(kBond) * s^2 * newUL(kBond,1))/2) * cellVolume^2; % newBS(kBond)   bond.concrete.stiffness
-    totalEnergy = totalEnergy + bondEnergy;
-
-    % Plot bond
     pt1 = [undeformedCoordinates(nodei,1), undeformedCoordinates(nodei,2), undeformedCoordinates(nodei,3)];
     pt2 = [undeformedCoordinates(nodej,1), undeformedCoordinates(nodej,2), undeformedCoordinates(nodej,3)];
     pts = [pt1; pt2]; % vertial concatenation
@@ -279,15 +164,11 @@ for kBond = 1 : size(newBL,1)
     
     hold on     
     
-
 end
 
-fprintf('Fracture energy: %.2f \n', totalEnergy/(1*1))
-
-
-% plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 4 )
-% scatter3(undeformedCoordinates(newBL(:,1),1), undeformedCoordinates(newBL(:,1),2), undeformedCoordinates(newBL(:,1),3), 20, 'b', 'filled')
-% scatter3(undeformedCoordinates(newBL(:,2),1), undeformedCoordinates(newBL(:,2),2), undeformedCoordinates(newBL(:,2),3), 20, 'b', 'filled')
+plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 4 )
+% scatter3(undeformedCoordinates(reducedBL(:,1),1), undeformedCoordinates(reducedBL(:,1),2), undeformedCoordinates(reducedBL(:,1),3), 20, 'b', 'filled')
+% scatter3(undeformedCoordinates(reducedBL(:,2),1), undeformedCoordinates(reducedBL(:,2),2), undeformedCoordinates(reducedBL(:,2),3), 20, 'b', 'filled')
 
 x = max(undeformedCoordinates(:,1));
 y = max(undeformedCoordinates(:,2));
@@ -296,10 +177,12 @@ plotcube([x y z],[0 0 0],0,1.5)
 set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
 set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
 % set(gca,'visible','off')
-xlabel('x', 'interpreter', 'latex')
-ylabel('y', 'interpreter', 'latex')
-zlabel('z', 'interpreter', 'latex')
+% xlabel('x', 'interpreter', 'latex')
+% ylabel('y', 'interpreter', 'latex')
+% zlabel('z', 'interpreter', 'latex')
 axis equal
+
+% view(0,0)
 
 %% Required functions
 function plotcube(varargin)

@@ -1,4 +1,4 @@
-function [VOLUMECORRECTIONFACTORS] = calculatevolumecorrectionfactors(UNDEFORMEDLENGTH,horizon,RADIJ)
+function [VOLUMECORRECTIONFACTORS] = calculatevolumecorrectionfactors(UNDEFORMEDLENGTH, horizon, RADIJ)
 % Calculate volume correction factors for every node
 % This function is based on the PA - PDLAMMPS algorithm. See 'Improved
 % one-point quadrature algorithms for two-dimensional peridynamic models

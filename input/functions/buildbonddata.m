@@ -1,4 +1,4 @@
-function [BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bondStiffnessConcrete,bondStiffnessSteel,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS)
+function [BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER,stiffeningFactor] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bondStiffnessConcrete,bondStiffnessSteel,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS)
 % Build bond data - determine the bond type and stiffness connecting node
 % pairs (e.g. is it a concrete or steel bond?)
 
@@ -45,11 +45,11 @@ for kBond = 1 : nBonds
     end
 
     % Calculate stiffening factor - surface corrections for 2D/3D problem
-    nodeiNeighbourhoodVolume = nFAMILYMEMBERS(nodei) * cellVolume;                                              % Neighbourhood area/volume for Node 'i'
-    nodejNeighbourhoodVolume = nFAMILYMEMBERS(nodej) * cellVolume;                                              % Neighbourhood area/volume for Node 'j'
-    stiffeningFactor = (2 * neighbourhoodVolume) / ((nodeiNeighbourhoodVolume + nodejNeighbourhoodVolume));     % Calculate stiffening correction factor - should the following be included: * VOLUMECORRECTIONFACTORS(kBond));  
-    BONDSTIFFNESS(kBond) = stiffeningFactor * bondStiffnessTemp;                                               % Correct the bond stiffness
-
+    nodeiNeighbourhoodVolume = nFAMILYMEMBERS(nodei) * cellVolume;                                                       % Neighbourhood area/volume for Node 'i'
+    nodejNeighbourhoodVolume = nFAMILYMEMBERS(nodej) * cellVolume;                                                       % Neighbourhood area/volume for Node 'j'
+    stiffeningFactor(kBond,1) = (2 * neighbourhoodVolume) / ((nodeiNeighbourhoodVolume + nodejNeighbourhoodVolume));     % Calculate stiffening correction factor - should the following be included: * VOLUMECORRECTIONFACTORS(kBond) 
+    BONDSTIFFNESS(kBond) = stiffeningFactor(kBond,1) * bondStiffnessTemp;                                                % Correct the bond stiffness
+    
 end
 
 % Bond force multiplier
