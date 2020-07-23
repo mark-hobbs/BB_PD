@@ -11,18 +11,18 @@
 % that observed experimentally. 
 
 %% Clear workspace 
-close all
+% close all
 clear all
 clc
 
 %% Geometry and Discretisation 
 
 member.NOD = 3;          % Number of degrees of freedom
-member.LENGTH = 2;       % x-axis (m) 
-member.WIDTH = 2;        % y-axis (m) 
-member.DEPTH = 0.5;        % z-axis (m)
+member.LENGTH = 1;       % x-axis (m) 
+member.WIDTH = 1;        % y-axis (m) 
+member.DEPTH = 1;        % z-axis (m)
 
-DX = 25/1000;                       % Spacing between material points (mm)
+DX = 50/1000;                       % Spacing between material points (mm)
 nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
 nDivY = round(member.WIDTH/DX);     % Number of divisions in y-direction    
 nDivZ = round(member.DEPTH/DX);     % Number of divisions in z-direction   
@@ -47,7 +47,7 @@ MATERIALFLAG = zeros(nNodes, 1);
 
 %% Build node families 
 
-horizon = pi * DX; 
+horizon = pi * DX; % 3.90 - 3.95
 
 % Build node families, bond lists, and determine undeformed length of every bond
 [nFAMILYMEMBERS, NODEFAMILYPOINTERS, NODEFAMILY, BONDLIST, UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates, horizon);
@@ -84,37 +84,43 @@ bond.concrete.s0 = sqrt( (5 * material.concrete.fractureEnergy) / (6 * material.
 %% Bond stiffness correction (surface effects)
 
 % Calculate bond type and bond stiffness (plus stiffness correction)
-[BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER,stiffeningFactor] = buildbonddata(BONDLIST, nFAMILYMEMBERS, MATERIALFLAG, bond.concrete.stiffness, 1, cellVolume, neighbourhoodVolume, VOLUMECORRECTIONFACTORS);
+[BONDSTIFFNESS, BONDTYPE, BFMULTIPLIER, stiffeningFactor] = buildbonddata(BONDLIST, nFAMILYMEMBERS, MATERIALFLAG, bond.concrete.stiffness, 1, cellVolume, neighbourhoodVolume, VOLUMECORRECTIONFACTORS);
+
+nBonds = size(BONDLIST,1);
+
+for i = 1 : nBonds
+   
+    s0(i,1) = sqrt( (10 * material.concrete.fractureEnergy) / (pi * bond.concrete.stiffness * stiffeningFactor(i,1)  * horizon^5) );
+    
+end
 
 %% Determine numerically the energy per unit fracture area for complete seperation of a unit cube
 
-nBonds = size(BONDLIST,1);
 counter = 0;
 totalEnergy = 0;
 totalEnergySC = 0;
-tol = 0.0;         % tolerance
+tol = 0;  % tolerance
+plane_depth = 0.5 + (DX/2);
 
 % A = [0 0 0.525];
 % B = [0 1 0.525];
-% C = [0.025 1 0.525];
-% D = [0.025 0 0.525];
+% C = [0.02501 1 0.525];
+% D = [0.02501 0 0.525];
 
 % A = [0.025 0 0.525];
 % B = [0.025 1 0.525];
 % C = [0.075 1 0.525];
 % D = [0.075 0 0.525];
 
-% A = [0 0 0.525];
-% B = [0 1 0.525];
-% C = [1 1 0.525];
-% D = [1 0 0.525];
+A = [0 0 plane_depth];
+B = [0 1 plane_depth];
+C = [1 1 plane_depth];
+D = [1 0 plane_depth];
 
-plane_depth = 0.25 + (DX/2);
-
-A = [0.5 - tol 0.5 - tol plane_depth];
-B = [0.5 - tol 1.5 + tol plane_depth];
-C = [1.5 + tol 1.5 + tol plane_depth];
-D = [1.5 + tol 0.5 - tol plane_depth];
+% A = [0.5 - tol 0.5 - tol plane_depth];
+% B = [0.5 - tol 1.5 + tol plane_depth];
+% C = [1.5 + tol 1.5 + tol plane_depth];
+% D = [1.5 + tol 0.5 - tol plane_depth];
 
 
 % Check and flag if a bond intersects with the defined 2D plane
@@ -130,8 +136,9 @@ for kBond = 1 : nBonds
         
         counter = counter + 1;
         
-        bondEnergy = ( (bond.concrete.stiffness * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;
-        bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;
+        bondEnergy = ( (bond.concrete.stiffness * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2; % * VOLUMECORRECTIONFACTORS(kBond, 1);
+        bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2; % * VOLUMECORRECTIONFACTORS(kBond, 1);
+        % bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * s0(kBond,1)^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2; % * VOLUMECORRECTIONFACTORS(kBond, 1);
         totalEnergy = totalEnergy + bondEnergy;
         totalEnergySC = totalEnergySC + bondEnergySC;
      
@@ -143,7 +150,7 @@ for kBond = 1 : nBonds
                 
 end
    
-area = 1^2;
+area = (1 * 1);
 fprintf('Fracture energy without surface corrections: %.2f \n', totalEnergy/area)
 fprintf('Fracture energy with surface corrections: %.2f \n', totalEnergySC/area)  
 
@@ -166,9 +173,15 @@ for kBond = 1 : size(reducedBL,1)
     
 end
 
-plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 4 )
-% scatter3(undeformedCoordinates(reducedBL(:,1),1), undeformedCoordinates(reducedBL(:,1),2), undeformedCoordinates(reducedBL(:,1),3), 20, 'b', 'filled')
-% scatter3(undeformedCoordinates(reducedBL(:,2),1), undeformedCoordinates(reducedBL(:,2),2), undeformedCoordinates(reducedBL(:,2),3), 20, 'b', 'filled')
+% A = [0.5 - tol 0.5 - tol plane_depth];
+% B = [0.5 - tol 1.5 + tol plane_depth];
+% C = [1.5 + tol 1.5 + tol plane_depth];
+% D = [1.5 + tol 0.5 - tol plane_depth];
+
+plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 2.5 ) 
+% tol = 0.1; plot3( [A(1) B(1) (C(1) + tol) (D(1) + tol) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 2.5 ) % for plotting 2D view - view(90,0)
+scatter3(undeformedCoordinates(reducedBL(:,1),1), undeformedCoordinates(reducedBL(:,1),2), undeformedCoordinates(reducedBL(:,1),3), 20, 'b', 'filled')
+scatter3(undeformedCoordinates(reducedBL(:,2),1), undeformedCoordinates(reducedBL(:,2),2), undeformedCoordinates(reducedBL(:,2),3), 20, 'b', 'filled')
 
 x = max(undeformedCoordinates(:,1));
 y = max(undeformedCoordinates(:,2));
@@ -176,75 +189,14 @@ z = max(undeformedCoordinates(:,3));
 plotcube([x y z],[0 0 0],0,1.5)
 set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
 set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
-% set(gca,'visible','off')
+set(gca,'visible','off')
 % xlabel('x', 'interpreter', 'latex')
 % ylabel('y', 'interpreter', 'latex')
 % zlabel('z', 'interpreter', 'latex')
+
 axis equal
-
-% view(0,0)
-
-%% Required functions
-function plotcube(varargin)
-% PLOTCUBE - Display a 3D-cube in the current axes
-%
-%   PLOTCUBE(EDGES,ORIGIN,ALPHA,COLOR,LINEWIDTH) displays a 3D-cube in the current axes
-%   with the following properties:
-%   * EDGES     : 3-elements vector that defines the length of cube edges
-%   * ORIGIN    : 3-elements vector that defines the start point of the cube
-%   * ALPHA     : scalar that defines the transparency of the cube faces (from 0 to 1)
-%   * COLOR     : 3-elements vector that defines the faces color of the cube
-%   * LINEWIDTH : scalar that defines the thickess of polygon edges
-%
-% Example:
-%   >> plotcube([5 5 5],[ 2  2  2],.8,[1 0 0],1);
-%   >> plotcube([5 5 5],[10 10 10],.8,[0 1 0],2);
-%   >> plotcube([5 5 5],[20 20 20],.8,[0 0 1]),3;
-
-% Default input arguments
-inArgs = { ...
-  [10 56 100] , ... % Default edge sizes (x,y and z)
-  [10 10  10] , ... % Default coordinates of the origin point of the cube
-  .7          , ... % Default alpha value for the cube's faces
-  [1 0 0]     , ... % Default Color for the cube
-  1             ... % Default line width
-  };
-
-% Replace default input arguments by input values
-inArgs(1:nargin) = varargin;
-
-% Create all variables
-[edges,origin,alpha,clr,linewidth] = deal(inArgs{:});
-
-% ---------------------------------
-%   XYZ{1}  |  XYZ{2}  |  XYZ{3} |
-% ---------------------------------
-XYZ = { ...
-  [0 0 0 0]  [0 0 1 1]  [0 1 1 0] ; ... % 1
-  [1 1 1 1]  [0 0 1 1]  [0 1 1 0] ; ... % 2
-  [0 1 1 0]  [0 0 0 0]  [0 0 1 1] ; ... % 3
-  [0 1 1 0]  [1 1 1 1]  [0 0 1 1] ; ... % 4
-  [0 1 1 0]  [0 0 1 1]  [0 0 0 0] ; ... % 5
-  [0 1 1 0]  [0 0 1 1]  [1 1 1 1]   ... % 6
-  };
-
-XYZ = mat2cell(...
-  cellfun( @(x,y,z) x*y+z , ...
-    XYZ , ...
-    repmat(mat2cell(edges,1,[1 1 1]),6,1) , ...     % Cube has 6 faces
-    repmat(mat2cell(origin,1,[1 1 1]),6,1) , ...
-    'UniformOutput',false), ...
-    6,[1 1 1]);
-
-cellfun(@patch,XYZ{1},XYZ{2},XYZ{3},... % Apply function to each cell in cell array
-  repmat({clr},6,1),...                 % Return an array containing 6x1 copies of {clr}
-  repmat({'FaceAlpha'},6,1),... 
-  repmat({alpha},6,1),...
-  repmat({'LineWidth'},6,1),... 
-  repmat({linewidth},6,1)... 
-  );
-
-view(3);
-
-end
+% view(90,0)
+% set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 18, 5], 'PaperUnits', 'centimeters', 'PaperSize', [18, 5])
+view(0,0)
+set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 8, 8], 'PaperUnits', 'centimeters', 'PaperSize', [8, 8])
     

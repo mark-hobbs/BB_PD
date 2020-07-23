@@ -181,6 +181,10 @@ horizon = pi * DX; % Be consistent - this is also known as the horizonRadius
 % Build node families, bond lists, and determine undeformed length of every bond
 [nFAMILYMEMBERS,NODEFAMILYPOINTERS,NODEFAMILY,BONDLIST,UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates,horizon);
 
+%% Build half or fifth-notch
+
+[BONDLIST, UNDEFORMEDLENGTH] = buildnotch(undeformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, DX, 18, 2.1);
+
 %% Volume correction factors 
 
 % Calculate volume correction factors to improve the accuracy of spatial
@@ -210,86 +214,18 @@ bond.steel.sc = 1;
 [BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bond.concrete.stiffness,bond.steel.stiffness,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
 
 % G0 = 0.005339846 * 1000; % N/mm -> N/m
-% 
-for i = 1 : size(BONDLIST, 1)
-    
-    % s0(i,1) = sqrt((10 * G0) / (pi * BONDSTIFFNESS(i,1) * horizon^5));
-    
-    beta = 0.25;
-    gamma = (2 + 2 * beta) / (2 * beta * (1 - beta));
-    s0 = 9.4595E-05;
-    sc(i,1) = (10 * gamma * material.concrete.fractureEnergy) / (pi * horizon^5 * BONDSTIFFNESS(i,1) * s0 * (1 + gamma * beta)) + s0;
-    s1(i,1) = (sc(i,1) - s0) /  gamma + s0;
-        
-end
-
-%% Build half or fifth-notch
-
-% nBonds = size(BONDLIST,1);
-% 
-% x_max = max(undeformedCoordinates(:,1));
-% y_max = max(undeformedCoordinates(:,2));
-% z_max = max(undeformedCoordinates(:,3));
-% x_min = min(undeformedCoordinates(:,1));
-% y_min = min(undeformedCoordinates(:,2));
-% z_min = min(undeformedCoordinates(:,3));
-% 
-% A = [18*DX y_min z_min];
-% B = [18*DX y_max z_min];
-% C = [18*DX y_max 5.1*DX];
-% D = [18*DX y_min 5.1*DX];
-% counter = 0;
-% 
-% % Calculate the nodal force (N/m^3) for every node, iterate over the bond list
-% for kBond = 1 : nBonds
+ 
+% for i = 1 : size(BONDLIST, 1)
 %     
-%     nodei = BONDLIST(kBond,1); % Node i
-%     nodej = BONDLIST(kBond,2); % Node j
+%     % s0(i,1) = sqrt((10 * G0) / (pi * BONDSTIFFNESS(i,1) * horizon^5));
 %     
-%     [checkcheck] = determineintersection(A, B, C, D, undeformedCoordinates(nodei,:), undeformedCoordinates(nodej,:));
-%     
-%     if checkcheck == 1
-%         
-%         counter = counter + 1;
-%         newBL(counter,:) = [nodei, nodej];
-%         newUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
-%         BONDSTIFFNESS(kBond,1) = 0;
-%         
-%     end
-%         
+%     beta = 0.25;
+%     gamma = (2 + 2 * beta) / (2 * beta * (1 - beta));
+%     s0 = 9.4595E-05;
+%     sc(i,1) = (10 * gamma * material.concrete.fractureEnergy) / (pi * horizon^5 * BONDSTIFFNESS(i,1) * s0 * (1 + gamma * beta)) + s0;
+%     s1(i,1) = (sc(i,1) - s0) /  gamma + s0;
 %         
 % end
-% 
-% 
-% for kBond = 1 : size(newBL,1)
-% 
-%     nodei = newBL(kBond,1); % Node i
-%     nodej = newBL(kBond,2); % Node j
-%     
-%     % Plot bond
-%     pt1 = [undeformedCoordinates(nodei,1), undeformedCoordinates(nodei,2), undeformedCoordinates(nodei,3)];
-%     pt2 = [undeformedCoordinates(nodej,1), undeformedCoordinates(nodej,2), undeformedCoordinates(nodej,3)];
-%     pts = [pt1; pt2]; % vertial concatenation
-%     plot3(pts(:,1), pts(:,2), pts(:,3), 'LineWidth', 0.75)
-%     
-%     hold on     
-%     
-% 
-% end
-% 
-% 
-% plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 2 )
-% % scatter3(undeformedCoordinates(newBL(:,1),1), undeformedCoordinates(newBL(:,1),2), undeformedCoordinates(newBL(:,1),3), 20, 'b', 'filled')
-% % scatter3(undeformedCoordinates(newBL(:,2),1), undeformedCoordinates(newBL(:,2),2), undeformedCoordinates(newBL(:,2),3), 20, 'b', 'filled')
-% 
-% plotcube([(x_max - DX) (y_max - DX) (z_max - DX)],[x_min x_min x_min],0,1.5)
-% set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
-% set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
-% % set(gca,'visible','off')
-% xlabel('x', 'interpreter', 'latex')
-% ylabel('y', 'interpreter', 'latex')
-% zlabel('z', 'interpreter', 'latex')
-% axis equal
 
 %% Simulation Parameters
 

@@ -95,7 +95,7 @@ for iTimeStep = 1 : nTimeSteps
         if BODYFORCEFLAG(i,3) == 1
         
             DISPLACEMENTFLAG(i,3) = 1;      
-            nodalDisplacement(i,3) = - 0.0000005 * counter;
+            nodalDisplacement(i,3) = - 0.000002 * counter;
         
         end
         
@@ -127,7 +127,7 @@ for iTimeStep = 1 : nTimeSteps
     
     % Update nodal coordinates
     U = C * deltaDisplacementVector;
-    U(applieddisplacementDOF,:) = - 0.0000005;
+    U(applieddisplacementDOF,:) = - 0.000002;
     deltaDisplacement = reshape(U,NOD,[])';                            % Re-shape (nNodes, NOD)
     deformedCoordinates = deformedCoordinates + deltaDisplacement;     % Update coordinates <------------- LOOK AT THIS!
     

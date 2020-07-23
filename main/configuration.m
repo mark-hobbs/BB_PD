@@ -27,7 +27,7 @@ config.materialModel.interface = 'linear';      % (linear / bilinear)
 % -------------------------------------------------------------------------
 
 % Solver (dynamic/static)
-config.solver = 'static';
+config.solver = 'dynamic';
 
 % -------------------------------------------------------------------------
 % General Solver Configuration

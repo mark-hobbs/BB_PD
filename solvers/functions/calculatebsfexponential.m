@@ -1,14 +1,14 @@
-function [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, s0, s1, sc, bondSofteningFactor, BONDTYPE, flagBondSoftening)
-% calculatebsftrilinear - calculate the bond softening factor for a
-% trilinear material model
+function [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, k, bondSofteningFactor, BONDTYPE, flagBondSoftening)
+% calculatebsfexponential - calculate the bond softening factor for a
+% decaying exponential material model
 %
 % Syntax: 
 %
 % Inputs:
 %   stretch                  - current bond stretch (dimensionless)
 %   s0                       - bond stretch at the linear elastic limit (s0)
-%   s1                       - bond stretch at the kink point (s1)
 %   sc                       - bond stretch at failure (sc)
+%   k                        - rate of decay
 %   flagBondSoftening        - flag to identify bonds that have reached the linear elastic limit 
 %   BONDTYPE                 - flag to identify the bond material type
 % 
@@ -28,7 +28,7 @@ function [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretc
 % mch61@cam.ac.uk
 % Department of Engineering
 % Cambridge University
-% August 2019
+% July 2020
 
 % ---------------------------- BEGIN CODE ---------------------------------
 % create a flag to identify concrete-to-concrete bonds (BONDTYPE == 0) and
@@ -38,29 +38,27 @@ function [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretc
 % elastic range
 
 nBonds = size(BONDTYPE, 1);
-beta = 0.25;
-eta = s1 / s0;
 
 bsf = zeros(nBonds, 1);
 
 for kBond = 1 : nBonds
     
-    % eta = s1(kBond,1) / s0; % fracture correction factors applied
     
     if BONDTYPE(kBond, 1) == 0
 
-        if (s0 < stretch(kBond)) && (stretch(kBond) <= s1)
-
-            bsf(kBond,1) = 1 - ( (eta - beta) / (eta - 1) * (s0 / stretch(kBond)) ) + ( (1 - beta) / (eta - 1) ); 
-            flagBondSoftening(kBond) = 1;
+        if (s0 < stretch(kBond)) && (stretch(kBond) <= sc)
             
-        elseif (s1 < stretch(kBond)) && (stretch(kBond) <= sc)
-
-            bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc - stretch(kBond)) / (sc - s1) );
+            % numerator = 1 - exp(-k * (stretch(kBond) - s0) / (sc - s0));
+            % denominator = 1 - exp(-k);
+            % bsf(kBond,1) = 1 - ((s0 / stretch(kBond)) * (1 - (numerator / denominator)));
             
+            bsf(kBond,1) = 1 - (s0 / stretch(kBond)) * (exp(-(stretch(kBond) - s0) / (s0 * k)) + (0.05 * (stretch(kBond) - s0) / stretch(kBond)));   % Standard exponential decay model
+            
+            flagBondSoftening(kBond) = 1; 
+            
+                
         elseif (stretch(kBond) > sc)
-            
-            
+                        
             bsf(kBond,1) = 1;
 
         end
