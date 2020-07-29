@@ -1,4 +1,4 @@
-function [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, k, bondSofteningFactor, BONDTYPE, flagBondSoftening)
+function [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, k, alpha, bondSofteningFactor, BONDTYPE, flagBondSoftening)
 % calculatebsfexponential - calculate the bond softening factor for a
 % decaying exponential material model
 %
@@ -48,12 +48,11 @@ for kBond = 1 : nBonds
 
         if (s0 < stretch(kBond)) && (stretch(kBond) <= sc)
             
-            % numerator = 1 - exp(-k * (stretch(kBond) - s0) / (sc - s0));
-            % denominator = 1 - exp(-k);
-            % bsf(kBond,1) = 1 - ((s0 / stretch(kBond)) * (1 - (numerator / denominator)));
-            
-            bsf(kBond,1) = 1 - (s0 / stretch(kBond)) * (exp(-(stretch(kBond) - s0) / (s0 * k)) + (0.05 * (stretch(kBond) - s0) / stretch(kBond)));   % Standard exponential decay model
-            
+            numerator = 1 - exp(-k * (stretch(kBond) - s0) / (sc - s0));
+            denominator = 1 - exp(-k);
+            residual = (alpha * (1 - (stretch(kBond) - s0) / (sc - s0)));
+            bsf(kBond,1) = 1 - (s0 / stretch(kBond)) * ((1 - (numerator / denominator)) + residual) / (1 + alpha);
+                        
             flagBondSoftening(kBond) = 1; 
             
                 

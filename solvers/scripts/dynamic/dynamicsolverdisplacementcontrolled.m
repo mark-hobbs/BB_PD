@@ -56,10 +56,13 @@ nodalForceY = zeros(nNodes,4);
 
 printoutputheader();
 
-k = 10; % rate of decay
+k = 20;             % rate of decay
+alpha = 0.1;
 delta = pi * DX;
-bond.concrete.s0 = 8.75E-5;
-sc = -(5 * k * (exp(k) - 1) * (material.concrete.fractureEnergy - (pi * bond.concrete.stiffness * delta^5 * bond.concrete.s0^2 * (k - exp(k) + 1))/(5 * k * (exp(k) - 1)))) / (bond.concrete.stiffness * delta^5 * bond.concrete.s0 * pi * (k - exp(k) + 1));
+s0 = 9.46E-5;
+GF = material.concrete.fractureEnergy;
+c = bond.concrete.stiffness;
+sc = (10 * GF * k + 10 * GF * alpha * k - 10 * GF * k * exp(k) - 10 * GF * alpha * k * exp(k) + 2 * pi * c * delta^5 * s0^2 + 2 * pi * c * delta^5 * k * s0^2 - 2 * pi * c * delta^5 * s0^2 * exp(k) + pi * alpha * c * delta^5 * k * s0^2 - pi * alpha * c * delta^5 * k * s0^2 * exp(k)) / (c * delta^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
 
 
 tic
@@ -79,7 +82,7 @@ for iTimeStep = timeStepTracker : nTimeSteps
     % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.sc, flagBondSoftening, bondSofteningFactor, BONDTYPE);
     % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
     % [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, 9.4595E-05, 7.0164E-04, 5.7603E-03, bondSofteningFactor, BONDTYPE, flagBondSoftening);
-    [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, bond.concrete.s0, sc, k, bondSofteningFactor, BONDTYPE, flagBondSoftening);
+    [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, k, alpha, bondSofteningFactor, BONDTYPE, flagBondSoftening);
     
     % Determine if bonds have failed
     % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, bond.concrete.sc, bond.steel.sc);

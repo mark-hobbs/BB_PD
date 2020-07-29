@@ -1,14 +1,25 @@
-% Trilinear mode
-clear all
-close all
+% ===============================
+%        Trilinear model
+% ===============================
 
-s0 = 1.126E-3;
-s1 = 2.391E-3*4;
-sc = 2.138E-2;
+clear all
+% close all
+
+
+s = [0 : 0.0000001 : 1E-2]';
 lambda = 0.25;
-eta = s1/s0;
 beta = 0.25; 
-s = [0 : 0.0001 : 3E-2]';
+s0 = 9.46E-5;
+gamma = (3 + 2 * beta) / (2 * beta * (1 - beta));
+
+GF = 133.496;
+c = 2.3214e18;
+delta = 15.708 / 1000;
+
+sc = ((10 * GF * gamma + pi * c * delta^5 * s0^2 + pi * beta * c * delta^5 * gamma * s0^2) / (c * delta^5 * s0 * pi * (beta * gamma + 1)));     % Equation derived by myself
+sc_ = ((10 * GF * gamma) / (c * delta^5 * s0 * pi * (beta * gamma + 1))) + s0;                                                                  % Equation from Yang paper
+s1 = ((sc - s0)/gamma) + s0;
+eta = s1/s0;
 
 a = (s1 - s0*lambda) / (s1 - s0);
 b1 = (sc - s1*lambda);
