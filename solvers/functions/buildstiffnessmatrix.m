@@ -1,4 +1,4 @@
-function [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,constrainedDOF)
+function  [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH)
 % buildstiffnessmatrix - This code is based on Algorithm A.2 from
 % 'Structural Material Damage: Novel Methods of Analysis' and David
 % Miranda's code for calculation of the stiffness/tangent matrix for BB PD
@@ -13,7 +13,7 @@ function [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORREC
 % entries for each pair of nodes that interact directly, and is inherently
 % more dense than that of a local model. 
 %
-% Syntax: [Kglobal,Fext,unconstrainedDOF,constrainedDOF,appliedExternalForceIndex] = buildstiffnessmatrix(COORDINATES,BONDLIST,VOLUMECORRECTIONFACTORS,VOLUME,BONDSTIFFNESS,BFMULTIPLIER,CONSTRAINTFLAG,BODYFORCE,MAXBODYFORCE,fail)
+% Syntax: [Kglobal] = buildstiffnessmatrix(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH)
 %
 % Inputs:
 %   nodalCoordinates            - undeformed or deformed nodalCoordinates of all nodes (nNodes x NOD)
@@ -55,7 +55,7 @@ NOD = size(nodalCoordinates, 2);
 
 %% Build the stiffness matrix using the compressed sparse column (CSC) format
 
-[globalRowIndex, globalColumnIndex, globalNonZeroValues] = buildstiffnessmatrixCSCformat_mex(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail);
+[globalRowIndex, globalColumnIndex, globalNonZeroValues, ~] = buildstiffnessmatrixCSCformat(nodalCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,UNDEFORMEDLENGTH);
 
 %% Create sparse global stiffness matrix
 
@@ -64,8 +64,8 @@ Kglobal = sparse(globalRowIndex, globalColumnIndex, globalNonZeroValues, nNodes 
 %% Reduce the stiffness matrix (application of boundary conditions)
 % Remove columns and rows corresponding to known values (constrained DOFs)
 
-Kglobal(constrainedDOF,:) = [];     % Discard rows of constrained nodal DOFs
-Kglobal(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
+% Kglobal(constrainedDOF,:) = [];     % Discard rows of constrained nodal DOFs
+% Kglobal(:,constrainedDOF) = [];     % Discard columns of constrained nodal DOFs
 
 % ------------------------- END CODE --------------------------------------
 

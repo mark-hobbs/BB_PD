@@ -27,7 +27,7 @@ void calculatebondsofteningfactor(double *stretch, double linearElasticLimit, do
 {
     int kBond;
 
-    #pragma omp parallel for shared(stretch, linearElasticLimit, BONDTYOE, flagBondSoftening, bsf, criticalStretchConcrete, bondSofteningFactor) private(kBond)
+    #pragma omp parallel for default(none) shared(stretch, linearElasticLimit, BONDTYOE, flagBondSoftening, bsf, criticalStretchConcrete, bondSofteningFactor) private(kBond)
     for (kBond = 0; kBond < nBonds; kBond++)
     {
 
@@ -72,8 +72,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     nBonds = mxGetM(prhs[0]);         // Number of rows in stretch
 
     stretch_ptr = mxGetPr(prhs[0]);   // stretch pointer
-    lel = mxGetScalar(prhs[1]);       // linear elastic limit
-    csc = mxGetScalar(prhs[2]);       // concrete critical stretch
+    lel = mxGetScalar(prhs[1]);       // linear elastic limit                TODO: Not a scalar!
+    csc = mxGetScalar(prhs[2]);       // concrete critical stretch           TODO: Not a scalar!
     fbs_ptr = mxGetPr(prhs[3]);       // flag bond softening pointer
     bsf_ptr = mxGetPr(prhs[4]);       // bond softening factor pointer
     BT_ptr = mxGetPr(prhs[5]);        // bond type pointer

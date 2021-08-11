@@ -7,10 +7,10 @@
 % University of Cambridge
 % mch61@cam.ac.uk
 
-function MAIN(inputdatafilename, checkpointfilename, vargin)
+function MAIN(inputdatafilename, nThreads, checkpointfilename, vargin)
 
-% MAIN(inputdatafilename)
-% MAIN(inputdatafilename, checkpointfile)
+% MAIN(inputdatafilename, nThreads)
+% MAIN(inputdatafilename, nThreads, checkpointfile)
 
 %% Add folder paths
 addfolderpaths
@@ -25,12 +25,19 @@ savecmdwindowoutput(config.cmdWindowOuput, inputdatafilename)
 
 %% Input parser
 
-if nargin == 1
+if nargin == 1 
+    
+    fprintf('Not enough input arguments: \n')
+    fprintf('\t MAIN(inputdatafilename, nThreads) \n')
+    fprintf('\t MAIN(inputdatafilename, nThreads, checkpointfilename) \n')
+    return
+    
+elseif nargin == 2
    
     checkpointfileflag = false;
     checkpointfilename = 'empty';
     
-else
+elseif nargin == 3
     
     checkpointfileflag = true;
     
@@ -39,12 +46,12 @@ end
 %% Module 1: Input
 % Load input file. Create a new input file using the functions and scripts
 % provided in BB_PD/input
-if nargin == 1
+if nargin == 2
     
     load(inputdatafilename)
 
     % Print details of simulation
-    printsimulationsetup(inputdatafilename, config)
+    % printsimulationsetup(inputdatafilename, config)
 
 end
  
@@ -68,7 +75,7 @@ if strcmp(config.solver,'dynamic')
         % -----------------------------------------------------------------
 
         fprintf('Start dynamic solver: displacement-controlled \n\n')
-        [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, checkpointfileflag, checkpointfilename);
+        [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, nThreads, checkpointfileflag, checkpointfilename);
 
     end
                
@@ -78,12 +85,14 @@ elseif strcmp(config.solver,'static')
         % Static Load-Controlled
         % -----------------------------------------------------------------
     
-        fprintf('Start static solver \n\n')
-        [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename, config);
+        fprintf('Start static solver: load-controlled \n\n')
+        [deformedCoordinates,fail,stretch] = newtonraphsondisplacementcontrolled(inputdatafilename, config);
     
         %------------------------------------------------------------------
         % Static Displacement-Controlled
         % -----------------------------------------------------------------
+        fprintf('Start static solver: displacement-controlled \n\n')
+        
 end
 
 diary off

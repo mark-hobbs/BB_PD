@@ -5,7 +5,12 @@ function [] = savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates
 % Syntax: [] = savedata(iTimeStep,frequency,inputdatafilename,deformedCoordinates,fail,,flagBondSoftening)
 %
 % Inputs:
-%   input1 -
+%   iTimeStep               -
+%   frequency               -
+%   inputdatafilename       -
+%   deformedCoordinates     -
+%   fail                    -
+%   flagBondSoftening       -
 % 
 %
 % Outputs:

@@ -1,4 +1,4 @@
-function[] = plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX, dsf, sz)
+function[] = plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX, sz, dsf)
 
 nodalDisplacement = deformedCoordinates - undeformedCoordinates;
 

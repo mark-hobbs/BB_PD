@@ -57,6 +57,7 @@ elseif NOD == 3
     axis equal
     colormap jet 
     colorbar
+    caxis([0 1])
     
 end
 

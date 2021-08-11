@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, checkpointfileflag, checkpointfilename)
+function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, nThreads, checkpointfileflag, checkpointfilename)
 % -------------------------------------------------------------------------
 % Dynamic Solver Displacement Controlled
 % -------------------------------------------------------------------------
@@ -7,6 +7,7 @@ function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputd
 % INPUT:
 %   inputdatafilename - name of input file
 %   config - configuration file
+%   nThreads - Number of OpenMP threads
 %
 % OUTPUT:
 %   deformedCoordinates - coordinates of deformed nodes
@@ -30,8 +31,9 @@ if checkpointfileflag == false
 
     MAXBODYFORCE = 0;                               % function calculatenodalforce requires this input
     deformedCoordinates = undeformedCoordinates;    % At t = 0, deformedCoordinates = undeformedCoordinates
-    frequency = 200;
-    BFMULTIPLIER = ones(nBonds,1);
+    frequency = 200;                                % Frequency at which data is printed to output
+    bsf = zeros(nBonds,1);
+    damageEnergy = zeros(nBonds,1);
 
 end
 
@@ -49,170 +51,100 @@ end
 
 %% Dynamic solver: displacement-controlled
 
-
-nodalForceX = zeros(nNodes,4);
-nodalForceZ = zeros(nNodes,4);
-nodalForceY = zeros(nNodes,4);
-
+nodalForceX = zeros(nNodes, nThreads); 
+nodalForceZ = zeros(nNodes, nThreads);
+nodalForceY = zeros(nNodes, nThreads);
 
 printoutputheader();
 
 tic
 
-% randomNumbers = 0.8 + (1.2 - 0.8) .* rand(nBonds,1);
-% for i = 1 : nBonds
-%     if BONDTYPE(i) == 0
-%         BONDSTIFFNESS(i) = randomNumbers(i) * BONDSTIFFNESS(i);
-%     end
-% end
-
-
-% [massVector] = buildmassmatrix(nNodes, DX, bondStiffnessConcrete, DT, nFAMILYMEMBERS);
-%[~, ~, ~, massVector] = buildstiffnessmatrixCSCformat(undeformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail);
-% massVector = massVector .* 100000;
-
-timingPeriod = 100;
-
-executionTimeA = zeros(timingPeriod,1); 
-executionTimeB = zeros(timingPeriod,1);
-executionTimeC = zeros(timingPeriod,1);  
-executionTimeD = zeros(timingPeriod,1);  
-executionTimeE = zeros(timingPeriod,1);  
-executionTimeF = zeros(timingPeriod,1);  
-executionTimeG = zeros(timingPeriod,1);  
-executionTimeH = zeros(timingPeriod,1); 
+% k = 25;
+% alpha = 0.25;
+% GF = material.concrete.fractureEnergy;
+% c = bond.concrete.stiffness;
+% horizon = pi * DX;
+% s0 = 1.0541E-04;
+% sc = (10 * k * (1 - exp(k)) * (GF - (pi * c * horizon^5 * s0^2 * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2)) / (10 * k * (exp(k) - 1) * (alpha + 1))) * (alpha + 1)) / (c * horizon^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
 
 % Time Stepping Loop
-for iTimeStep = timeStepTracker : nTimeSteps
+for iTimeStep = simulation.timeStepTracker : simulation.nTimeSteps
     
-    timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
+    simulation.timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
     
     % Use a smooth amplitude curve to define the displacement increment at every time step
-    displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
-    
-    % Apply displacement boundary condition - DO!!!!
-    % nodalDisplacement(BODYFORCEFLAG == 1) = displacementIncrement;                    % Apply boundary conditions - applied displacement
-    % deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
+    displacementIncrement = smoothstepdata(iTimeStep, 1, simulation.nTimeSteps, 0, simulation.appliedDisplacement);  
     
     % Calculate deformed length of every bond
-    tic
-    % [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
     calculatedeformedlengthMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
-    executionTimeA(iTimeStep) = toc;
     
-    % Calculate plastic stretch for steel-steel bonds
-    tic
-    % [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
-    calculateplasticstretchMex(stretchPlastic,yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
-    executionTimeB(iTimeStep) = toc;
+    % Calculate bond softening factor
+    % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.sc, flagBondSoftening, bondSofteningFactor, BONDTYPE);   % Bilinear 
+    % [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, s0, s1, sc, bondSofteningFactor, BONDTYPE, flagBondSoftening);                                  % Trilinear
+    % [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, 25, 0.25, bondSofteningFactor, BONDTYPE, flagBondSoftening);                          % Decaying exponential
     
-    % Calculate bond softening factor for bilinear material model
-    tic
-    [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch,linearElasticLimit,criticalStretchConcrete,flagBondSoftening,bondSofteningFactor,BONDTYPE);
-    executionTimeC(iTimeStep) = toc;
+    bsf(:,:) = 0; % Does bsf need to be initiatlised for every time step?
+    calculatebsfexponentialMex(stretch, s0, sc, 25, 0.25, bsf, bondSofteningFactor, BONDTYPE, flagBondSoftening); 
     
     % Determine if bonds have failed
-    tic
-    calculatebondfailureMex(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
-    % [fail] = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
-    executionTimeD(iTimeStep) = toc;
+    % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, sc, bond.steel.sc);
+    % [fail] = calculatebondfailure(fail, failureFunctionality, BONDTYPE, stretch, sc, bond.steel.sc); 
     
     % Calculate bond force for every bond
-    tic
-    calculatebondforcesMex(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
-    % [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
-    executionTimeE(iTimeStep) = toc;
+    calculatebondforcesMex(bForceX, bForceY, bForceZ, fail, deformedX, deformedY, deformedZ, deformedLength, stretch, stretchPlastic, BONDSTIFFNESS, cellVolume, VOLUMECORRECTIONFACTORS, bondSofteningFactor);
     
     % Calculate nodal force for every node
-    tic
-    % [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,MAXBODYFORCE);
     nodalForce(:,:) = 0;     % Nodal force - initialise for every time step
     nodalForceX(:,:) = 0;    % Nodal force - initialise for every time step
     nodalForceY(:,:) = 0;    % Nodal force - initialise for every time step
     nodalForceZ(:,:) = 0;    % Nodal force - initialise for every time step
     calculatenodalforcesopenmpMex(BONDLIST, nodalForce, bForceX, bForceY, bForceZ, nodalForceX, nodalForceY, nodalForceZ)
-    executionTimeF(iTimeStep) = toc;
         
-    % Adaptively calculate the damping coefficient
-    % [cn] = calculatedampingcoefficient(nodalForce, massVector, nodalForcePrevious, DT, nodalVelocityPreviousHalf, nodalDisplacement);
-      
     % Time integration
-    tic
-    [nodalDisplacement,nodalVelocity,deformedCoordinates,~] = timeintegrationeulercromer(nodalForce,nodalDisplacement,nodalVelocity,DAMPING,DENSITY,CONSTRAINTFLAG,undeformedCoordinates,DT,BODYFORCEFLAG,config.loadingMethod,displacementIncrement,deformedCoordinates);    
-    % [nodalDisplacement, nodalVelocityForwardHalf] = timeintegrationADR(iTimeStep, DT, nodalVelocityForwardHalf, nodalForce, massVector, cn, nodalVelocityPreviousHalf, nodalDisplacement, CONSTRAINTFLAG);
-    % Where are constraint flags applied? ^^^^^^
-    executionTimeG(iTimeStep) = toc;
+    % [nodalDisplacement, nodalVelocity, deformedCoordinates,~] = timeintegrationeulercromer(nodalForce, nodalDisplacement, nodalVelocity, simulation.DAMPING, DENSITY, CONSTRAINTFLAG, undeformedCoordinates, simulation.DT, BODYFORCEFLAG, config.loadingMethod, displacementIncrement, deformedCoordinates);    
+    timeintegrationeulercromerMex(nodalAcceleration, nodalForce, simulation.DAMPING, nodalVelocity, DENSITY, CONSTRAINTFLAG, simulation.DT, nodalDisplacement, deformedCoordinates, undeformedCoordinates);
+    
+    % Penetrator
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, simulation.DT, cellVolume, DENSITY);
 
-    tic
-    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator1, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
-    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz2] = calculatecontactforce(penetrator2, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
-    %[nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz1] = calculatecontactforce(support1, 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
-    %[nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz2] = calculatecontactforce(support2, 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
-    executionTimeH(iTimeStep) = toc;
-    
-    % deformedCoordinates(:,:) = undeformedCoordinates(:,:) + nodalDisplacement(:,:);   % Deformed coordinates of all nodes
-    % nodalVelocityPreviousHalf = nodalVelocityForwardHalf;
-    % nodalForcePrevious = nodalForce;
-    
-    % Calculate the strain energy density for every node
-    % [strainEnergy,nodalStrainEnergyDensity] = calculatestrainenergy(nNodes,fail,BONDSTIFFNESS,BFMULTIPLIER,stretch,UNDEFORMEDLENGTH,VOLUMECORRECTIONFACTORS,BONDLIST,cellVolume); 
-    
-    % Save variable history
-    % strainEnergyHistory(iTimeStep,1) = strainEnergy;
-    % nodalDisplacementHistory(iTimeStep,1) = nodalDisplacement(1500,3);
+    % Supports
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz1] = calculatecontactforce(supports(1), 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, simulation.DT, cellVolume, DENSITY);
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz2] = calculatecontactforce(supports(2), 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, simulation.DT, cellVolume, DENSITY);
     
     % Calculate reaction force
-    % reactionForce = calculatereactionforceFast(nodalForce, CONSTRAINTFLAG, DX); % TODO: introduce frequency
-    reactionForce = penetratorfz1 + penetratorfz2;
-    % reactionForce = supportfz1 + supportfz2;
+    reactionForce = penetratorfz1;
+    %reactionForce = supportfz1 + supportfz2;
     
-    % CMOD = nodalDisplacement(20,1) - nodalDisplacement(15,1);
+    CMOD = nodalDisplacement(simulation.CMOD(2),1) - nodalDisplacement(simulation.CMOD(1),1);
+    
+    % Dissipated damage energy
+    [damageEnergy] = calculatedamageenergy(BONDSTIFFNESS, s0, sc, UNDEFORMEDLENGTH, stretch, 25, 0.25, cellVolume, damageEnergy);
     
     % Print output to text file
-    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield);
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(simulation.referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD, sum(damageEnergy));
     
     % Save output variables for postprocessing (BB_PD/output/outputfiles/inputdatafilename/)
     savedata(iTimeStep,1000,inputdatafilename,deformedCoordinates,fail,flagBondSoftening);
     
     % Save damage figure (BB_PD/output/outputfiles/inputdatafilename/)
-    savedamagefigure(iTimeStep,200,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
+    % savedamagefigure(iTimeStep,1000,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
     
     % Save checkpoint file
     if mod(iTimeStep, 10000) == 0
         
        [folderPath] = findfolder('BB_PD/output/checkpointfiles');
-       inputdatafilename = erase(inputdatafilename,'.mat'); % erase .mat from inputdatafilename
+       inputdatafilename = erase(inputdatafilename,'.mat');             % erase .mat from inputdatafilename
        baseFileName = sprintf('%s_checkpoint.mat', inputdatafilename);
        fullFileName = fullfile(folderPath , baseFileName);
        save(fullFileName)
         
     end
     
-    % Timing
-    if iTimeStep == timingPeriod
-        
-        fprintf('Average execution time: Function A = %.3fs \n', mean(executionTimeA))
-        fprintf('Average execution time: Function B = %.3fs \n', mean(executionTimeB))
-        fprintf('Average execution time: Function C = %.3fs \n', mean(executionTimeC))
-        fprintf('Average execution time: Function D = %.3fs \n', mean(executionTimeD))
-        fprintf('Average execution time: Function E = %.3fs \n', mean(executionTimeE))
-        fprintf('Average execution time: Function F = %.3fs \n', mean(executionTimeF))
-        fprintf('Average execution time: Function G = %.3fs \n', mean(executionTimeG))
-        fprintf('Average execution time: Function H = %.3fs \n', mean(executionTimeH))
-
-    end
-    
 end
-
-
 
 timeintegrationTiming = toc;
 fprintf('Time integration complete in %fs \n', timeintegrationTiming)
 
-% plotvariablehistory(nTimeSteps,nodalDisplacementHistory,'Nodal Displacement (m)')
-% plotvariablehistory(nTimeSteps,appliedForceHistory,'Applied Force (N)')
-% plotvariablehistory(nTimeSteps,strainEnergyHistory,'Strain Energy (J)')
-% plotnodaldata(undeformedCoordinates,nodalDisplacement,nodalStrainEnergyDensity,'Strain Energy Density')
 
 end
 

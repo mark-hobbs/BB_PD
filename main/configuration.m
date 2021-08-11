@@ -55,31 +55,27 @@ config.dynamicsolverinputlist = {'undeformedCoordinates'...    % (nNodes , NOD)
                                 'CONSTRAINTFLAG'...            % (nNodes , NOD)
                                 'MATERIALFLAG'...              % (nNodes , NOD)
                                 'BODYFORCEFLAG'...             % (nNodes , NOD)
-                                'DENSITY'...                   % (nNodes , 1)
                                 'nFAMILYMEMBERS'...            % (nNodes , 1) - not essential
+                                'DENSITY'...                   % (nNodes , 1) 
                                 'BONDLIST'...                  % (nBonds , 2)
                                 'UNDEFORMEDLENGTH'...          % (nBonds , 1)
                                 'BFMULTIPLIER'...              % (nBonds , 1)
                                 'BONDSTIFFNESS'...             % (nBonds , 1)
                                 'BONDTYPE'...                  % (nBonds , 1)
                                 'VOLUMECORRECTIONFACTORS'...   % (nBonds , 1)
-                                'linearElasticLimit'...        % (1 , 1)
-                                'criticalStretchConcrete'...   % (1 , 1)
-                                'criticalStretchSteel'...      % (1 , 1)
-                                'bondStiffnessConcrete'...     % (1 , 1)
                                 'cellVolume'...                % (1 , 1)
                                 'DX'...                        % (1 , 1)
-                                'MAXBODYFORCE'...              % (1 , 1)
-                                'DAMPING'...                   % (1 , 1)
-                                'nTimeSteps'...                % (1 , 1)
-                                'DT'...                        % (1 , 1)
-                                'timeStepTracker'...           % (1 , 1)
-                                'equilibriumTolerance'...      % (1 , 1)
-                                'penetrator1'...               
-                                'penetrator2'...
-                                'referenceNode'...             % (1 , 1)
-                                'appliedDisplacement'};        % (1 , 1)
+                                's0'...                        % (nBonds , 1)
+                                's1'...                        % (nBonds , 1)
+                                'sc'...                        % (nBonds , 1)  
+                                'penetrator'...                % (structure)
+                                'supports'...                  % (structure)
+                                'material'...                  % (structure)
+                                'bond'...                      % (structure)
+                                'simulation'};                 % (structure)
+                                                              
                             
+                                
 % Dynamic termination method (on/off)
 config.dynamicSimulationTermination = 'off';
 
@@ -112,7 +108,8 @@ config.staticsolverinputlist = {'undeformedCoordinates'...     % (nNodes , NOD)
                                 'nTimeSteps'...                % (1 , 1)
                                 'DT'...                        % (1 , 1)
                                 'timeStepTracker'...           % (1 , 1)
-                                'equilibriumTolerance'};       % (1 , 1)
+                                'equilibriumTolerance'...      % (1 , 1)
+                                'bond'};                       % (structure)       
 
 % Static termination method
 

@@ -1,6 +1,6 @@
 function plotdiscretisedmember(undeformedCoordinates, MATERIALFLAG)
 
-% Seperate scatter data into sub sets:
+% Seperate scatter data into sub sets: Concrete / Steel / Supports
 
 % Concrete Nodes
 COORDINATESCONCRETE = undeformedCoordinates(:,:);

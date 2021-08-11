@@ -27,7 +27,7 @@ void calculatebondfailure(double *fail, double failureFunctionality, double *BON
 {
     int kBond;
 
-    #pragma omp parallel for shared(fail, BONDTYPE, stretch, criticalStretchConcrete, failureFunctionality, criticalStretchSteel) private(kBond)
+    #pragma omp parallel for default(none) shared(fail, BONDTYPE, stretch, criticalStretchConcrete, failureFunctionality, criticalStretchSteel) private(kBond)
     for (kBond = 0; kBond < nBonds; kBond++)
     {
 

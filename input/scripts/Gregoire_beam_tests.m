@@ -95,48 +95,69 @@
 % Gregoire et al., 2013
 % =========================================================================
 
-%% Clear workspace
+%% Clear workspace 
 close all
 clear all
 clc
+fprintf('\n\n\n====================================================\n')
+fprintf('           CHECK MATERIAL PARAMETERS!               \n')
+fprintf('====================================================\n\n\n')
+
 fprintf('Module 1: Create input data file \n')
 
-%% ------------------------------ Load Data -------------------------------
+%% Geometry and Discretisation 
 
-%% ------------------------------- Part 1 ---------------------------------
+member.NOD = 3;             % Number of degrees of freedom
+member.LENGTH = 0.175;       % x-axis (m) 
+member.WIDTH = 0.05;        % y-axis (m) 
+member.DEPTH = 0.05;        % z-axis (m)
 
-datageometry            % Load member geometry data
-databoundaryconditions  % Initialise boundary conditions - this should move (currently used to initialise CONSTRAINTFLAG, MATERIALFLAG and BODYFORCEFLAG)
-undeformedCoordinates = buildmaterialpointcoordinates();    % Build regular grid of nodes
+DX = 5/1000;                        % Spacing between material points (mm)
+nDivX = round(member.LENGTH/DX);    % Number of divisions in x-direction    
+nDivY = round(member.WIDTH/DX);     % Number of divisions in y-direction    
+nDivZ = round(member.DEPTH/DX);     % Number of divisions in z-direction   
+cellVolume = DX^3;                  % Cell volume
+RADIJ = DX/2;                       % Material point radius
+
+memberLength = nDivX * DX;     % Length (m) - x
+memberDepth = nDivY * DX;      % Depth (m) - y
+memberWidth = nDivZ * DX;      % Width (m) - z
+
+undeformedCoordinates = buildmaterialpointcoordinates(member.NOD, DX, nDivX, nDivY, nDivZ);    % Build regular grid of nodes
+nNodes = size(undeformedCoordinates , 1);
 
 fprintf('Length (x) = %.2fm \nDepth (y) = %.2fm \nWidth (z) = %.2fm \n', memberLength, memberDepth, memberWidth)
 fprintf('DX = %.4fm \n', DX)
 fprintf('nDivX = %.0f \nnDivY = %.0f \nnDivZ = %.0f \n', nDivX, nDivY, nDivZ)
-plotnodes(undeformedCoordinates, 'Material Points', 10, 30, 30)
 
+plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane', 10, 0, 0)    % Plot undeformed nodes and check for errors
+plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
 
-% ==========================
-%       Build supports
-% ==========================
+%% FLAGS 
 
-% [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(DX*10,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);           % Build first support
-% [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports((nDivX-9.5)*DX,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build second support
-% nNodes = size(undeformedCoordinates,1);
+MATERIALFLAG = zeros(nNodes, 1);              % Create flag to identify steel and concrete nodes Concrete = 0 Steel = 1
+BODYFORCEFLAG = zeros(nNodes, member.NOD);    % Create flag to identify applied forces  = 0 constrained = 1
+CONSTRAINTFLAG = zeros(nNodes, member.NOD);   % Create flag to identify constrained nodes unconstrained = 0 constrained = 1
 
-supportRadius = 5 * DX;
-searchRadius = 10.1 * DX;
-supportCentreX = [6 * DX, (nDivX - 5) * DX];
+%% Build supports 
+
+supportRadius = 5 * DX;     % (5 * DX = 25mm)
+searchRadius = 10.1 * DX;   % (10.1 * DX = 50.5mm)
+supportCentreX = [ (DX * ((0.5 * member.DEPTH)/DX)) , DX * ((3 * member.DEPTH)/DX) + DX ];
 supportCentreZ = - supportRadius + DX;
-support1 = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
-support2 = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
-clear supportRadius searcRadius supportCentreX supportCentreZ
-    
+supports(1) = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
+supports(2) = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 
-% ==========================
-%   Build rigid penetrator
-% ==========================
-penetratorRadius = 50 * DX;
-searchRadius = 55.1 * DX;
+% [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(supportCentreX(1,1),DX,nDivX,nDivY,nDivZ,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build first support
+% [undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG] = buildsupports(supportCentreX(1,2),DX,nDivX,nDivY,nDivZ,undeformedCoordinates,CONSTRAINTFLAG,MATERIALFLAG,BODYFORCEFLAG,0,0,1);  % Build second support
+% plotdiscretisedmember(undeformedCoordinates,MATERIALFLAG)
+
+clear supportRadius searchRadius supportCentreX supportCentreZ 
+
+%% Build rigid penetrator 
+
+penetratorRadius = 10 * DX;     % (10 * DX = 50mm) (60 * DX = 300mm)
+searchRadius = 15.1 * DX;       % (15.1 * DX = 75.5mm) (62.1 * DX = 310.5mm)
 penetratorCentreX = (nDivX/2) * DX;
 penetratorCentreZ = (nDivZ * DX) + penetratorRadius;  
 penetrator = buildpenetrator(1, penetratorCentreX, penetratorCentreZ, penetratorRadius, searchRadius, undeformedCoordinates);
@@ -144,57 +165,95 @@ distanceX = undeformedCoordinates(penetrator.family,1) - penetrator.centre(:,1);
 distanceZ = undeformedCoordinates(penetrator.family,3) - penetrator.centre(:,2);
 distance = sqrt((distanceX .* distanceX) + (distanceZ .* distanceZ));
 penetrator.centre(1,2) = penetratorCentreZ - (min(distance) - penetratorRadius);    % correct penetrator centre-point
-clear penetratorRadius searchRadius penetratorCentreX penetratorCentreZ
 
-% Plot boundary conditions
-% plotflags(undeformedCoordinates,BODYFORCEFLAG)
-% plotflags(undeformedCoordinates,CONSTRAINTFLAG)
-plotdiscretisedmember(undeformedCoordinates,MATERIALFLAG)
+for i = 1 : size(penetrator.family, 1)
+    
+    j = penetrator.family(i);
+    
+    BODYFORCEFLAG(j,3) = 1;
+        
+end
 
-% Plot undeformed nodes and check for errors 
-plotnodes(undeformedCoordinates, 'Undeformed material points: x-y plane ', 10, 0, 0)
-% plotnodes(undeformedCoordinates, 'Undeformed material points', 10, 30, 30)
+clear penetratorRadius searchRadius penetratorCentreX penetratorCentreZ distanceX distanceZ distance i j
 
-%% ------------------------------- Part 2 ---------------------------------
+%% Build node families 
 
 % Improve spatial localtiy of data (space filling curve ordering of particles)
-% [] = hilbertCurve();
 
 horizon = pi * DX; % Be consistent - this is also known as the horizonRadius
 
 % Build node families, bond lists, and determine undeformed length of every bond
 [nFAMILYMEMBERS,NODEFAMILYPOINTERS,NODEFAMILY,BONDLIST,UNDEFORMEDLENGTH] = buildhorizons(undeformedCoordinates,horizon);
 
-% Calculate volume correction factors
+%% Build half or fifth-notch
+
+% [BONDLIST, UNDEFORMEDLENGTH, nFAMILYMEMBERS, NODEFAMILYPOINTERS, NODEFAMILY] = buildnotch(undeformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, DX, 140, 40.1);
+
+%% Volume correction factors 
+
+% Calculate volume correction factors to improve the accuracy of spatial
+% integration
 VOLUMECORRECTIONFACTORS = calculatevolumecorrectionfactors(UNDEFORMEDLENGTH,horizon,RADIJ);
 
-%% ------------------------------- Part 3 ---------------------------------
+%% Material properies 
 
-% Load material properties
-datamaterialproperties
+datamaterialproperties      % Load material properties
 
-% Load peridynamic parameters
-dataPDparameters
+[DENSITY] = buildnodaldensity(MATERIALFLAG,material.concrete.density,material.steel.density);
+
+%% Peridynamic parameters 
+
+neighbourhoodVolume = (4/3) * pi * horizon^3;   % Neighbourhood volume for node contained within material bulk
+
+bond.concrete.stiffness = (12 * material.concrete.E) / (pi * horizon^4);    % Bond stiffness 3D
+bond.steel.stiffness = (12 * material.steel.E) / (pi * horizon^4);          % Bond stiffness 3D
+
+bond.concrete.s0 = 8.75009856494892E-05;  % constitutive law
+bond.concrete.sc = 2.18752464123723E-03;
+bond.steel.sc = 1;
+
+%% Bond stiffness correction (surface effects)
 
 % Calculate bond type and bond stiffness (plus stiffness correction)
-[BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bondStiffnessConcrete,bondStiffnessSteel,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
+[BONDSTIFFNESS,BONDTYPE,~,~] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bond.concrete.stiffness,bond.steel.stiffness,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
 
-% Calculate critical stretch values - should move into module 2
-criticalStretchConcrete = calculatecriticalstretch(NOD,fractureEnergyConcrete,Econcrete,horizon);
-criticalStretchSteel = calculatecriticalstretch(NOD,fractureEnergySteel,Esteel,horizon);
+%% Fracture energy corrections - TO FINISH
+ 
+for i = 1 : size(BONDLIST, 1)
+    
+    s0(i,1) = (3.9E6 / material.concrete.E);
+    
+    % Trilinear
+    % beta = 0.25;
+    % gamma = (2 + 2 * beta) / (2 * beta * (1 - beta));
+    % sc(i,1) = (10 * gamma * material.concrete.fractureEnergy) / (pi * horizon^5 * BONDSTIFFNESS(i,1) * s0 * (1 + gamma * beta)) + s0;
+    % s1(i,1) = (sc(i,1) - s0) /  gamma + s0;
+        
+    % Decaying exponential
+    k = 25;
+    alpha = 0.25;
+    sc(i,1) = (10 * k * (1 - exp(k)) * (material.concrete.fractureEnergy - (pi * BONDSTIFFNESS(i,1) * horizon^5 * s0(i,1)^2 * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2)) / (10 * k * (exp(k) - 1) * (alpha + 1))) * (alpha + 1)) / (BONDSTIFFNESS(i,1) * horizon^5 * s0(i,1) * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
 
-% Assign density values to all nodes
-DENSITY = buildnodaldensity(MATERIALFLAG,densityConcrete,densitySteel);
+end
 
-%% ------------------------------- Part 4 ---------------------------------
+clear i beta gamma k alpha; 
 
-% Load simulation parameters
-datasimulationparameters
+%% Simulation Parameters
+
+simulation.SAFETYFACTOR = 1;                                                                                                                    % Time step safety factor - to reduce time step size and ensure stable simulation
+simulation.DT = (0.8 * sqrt(2 * material.concrete.density * DX / (pi * horizon^2 * DX * bond.concrete.stiffness))) / simulation.SAFETYFACTOR;   % Minimum stable time step
+
+simulation.nTimeSteps = 200000;              % Number of time steps
+simulation.DAMPING = 0;                      % Damping coefficient
+simulation.appliedDisplacement = -1E-3;      % Applied displacement (m) (-0.5E-3)
+simulation.referenceNode = 18;               % Define a reference point/node for measuring deflections (18, 35, 70, 140)
+simulation.CMOD = [10 25];                   % Define reference nodes for measuring CMOD ([10 25], [25 45], [50 90], [100 180])
+simulation.timeStepTracker = 1;              % Tracker for determining previous time step when restarting simulations
 
 % Calculate applied body force per node (cell)
-MAXBODYFORCE = calculateappliedbodyforce(BODYFORCEFLAG,appliedLoad,cellVolume);
+% MAXBODYFORCE = calculateappliedbodyforce(BODYFORCEFLAG,appliedLoad,cellVolume);
 
-%% ------------------------------- Part 5 ---------------------------------
+%% Save input file
 
 % Clear unwanted variables and arrays
 clear userInput;

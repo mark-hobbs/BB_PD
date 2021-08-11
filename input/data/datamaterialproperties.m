@@ -4,35 +4,35 @@
 
 %----------------------------- Density ------------------------------------
 
-densityConcrete = 2400;     % Density concrete (kg/m^3)
-densitySteel = 8000;        % Density steel (kg/m^3)
+material.concrete.density = 2346;     % Density concrete (kg/m^3)
+material.steel.density = 8000;        % Density steel (kg/m^3)
 
 
 %------------------------- Young's Modulus --------------------------------
 
-Econcrete = 30.5E9;     % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
-Esteel = 208e9;         % Young's modulus
+material.concrete.E = 33.8E9;       % Young's modulus (remember to convert cubic test results to cylindrical equivalent) 
+material.steel.E = 208e9;         % Young's modulus
 
 
 %------------------------- Fracture Energy --------------------------------
 
-fractureEnergyConcrete = 133;   % Fracture energy (N/m)
-fractureEnergySteel = 12500;   % Fracture energy (N/m)
+material.concrete.fractureEnergy = 125.2;   % Fracture energy (N/m)
+material.steel.fractureEnergy = 12500;      % Fracture energy (N/m)
 
 
 %------------------------- Poisson's Ratio --------------------------------
 
-Vconcrete = 0.2;         % Poisson's ratio
-Vsteel = 0.3;            % Poisson's ratio
+material.concrete.v = 0.2;         % Poisson's ratio
+material.steel.v = 0.3;            % Poisson's ratio
 
 
 %--------------------------- Shear Modulus --------------------------------
 
-Gconcrete = Econcrete / (2 * (1 + Vconcrete));  % Shear modulus (TODO: Need to find more info on the correct value for shear modulus)
-Gsteel = 78e9;           % Shear modulus
+material.concrete.shearModulus = material.concrete.E / (2 * (1 + material.concrete.v));  % Shear modulus (TODO: Need to find more info on the correct value for shear modulus)
+material.steel.shearModulus = 78e9;                                                      % Shear modulus
 
 
 %----------------------- Effective Modulus --------------------------------
 
-effectiveModulusConcrete = Econcrete / ((1 - 2 * Vconcrete) * (1 + Vconcrete));     % Effective modulus
-effectiveModulusSteel = Esteel / ((1 - 2 * Vsteel) * (1 + Vsteel));                 % Effective modulus
+material.concrete.effectiveModulus = material.concrete.E / ((1 - 2 * material.concrete.v) * (1 + material.concrete.v));     % Effective modulus
+material.steel.effectiveModulus = material.steel.E / ((1 - 2 * material.steel.E) * (1 + material.steel.E));                 % Effective modulus

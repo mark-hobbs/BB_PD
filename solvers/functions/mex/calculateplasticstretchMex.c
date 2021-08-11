@@ -29,7 +29,7 @@ void calculateplasticstretch(double *stretchPlastic, double *yieldingLength, dou
     int kBond;
     double yieldStretchSteel = 0.002;
 
-    #pragma omp parallel for shared(nBonds, BONDTYPE, stretch, yieldStretchSteel, flagBondYield, yieldingLength, deformedLength, stretchPlastic) private(kBond)
+    #pragma omp parallel for default(none) shared(nBonds, BONDTYPE, stretch, yieldStretchSteel, flagBondYield, yieldingLength, deformedLength, stretchPlastic) private(kBond)
     for (kBond = 0; kBond < nBonds; kBond++)
     {
 

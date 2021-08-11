@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(config)
+function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(inputdatafilename, config)
 % newtonraphsonloadcontrolled - this function uses a standard
 % Newton-Rapshon procedure to solve the static peridynamic equation of
 % motion. Bond failure is not permitted with this method. 
@@ -27,7 +27,7 @@ function [deformedCoordinates,fail,stretch] = newtonraphsonloadcontrolled(config
 % ---------------------------- BEGIN CODE ---------------------------------
 
 % Load the defined input file name                  
-load(config.inputdatafilename, config.dynamicsolverinputlist{:});
+load(inputdatafilename, config.dynamicsolverinputlist{:});
 
 % Initialise constants, arrays, and variables
 nNodes = size(undeformedCoordinates,1);
@@ -38,20 +38,24 @@ deformedX = zeros(nBonds,1);
 deformedY = zeros(nBonds,1);
 deformedZ = zeros(nBonds,1);
 deformedLength = zeros(nBonds,1);
+bForceX = zeros(nBonds,1);
+bForceY = zeros(nBonds,1);
+bForceZ = zeros(nBonds,1);
 stretch = zeros(nBonds,1);
-% displacedCoordinates = COORDINATES;       % For the first iteration, displacedCoordinates is equal to COORDINATES
+stretchPlastic = zeros(nBonds,1);
+nodalForce = zeros(nNodes, NOD);
 % nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
-% counterLoadStep = 0;
 loadIncrementCounter = 0;
-startLoadMultiplier = 1 ;
-finalLoadMultiplier = 1;
-incrementLoadMultiplier = 0.0025;
-deformedCoordinates = undeformedCoordinates; % For the first iteration, deformedCoordinates is equal to undeformedCoordinates
-nBondsBrokenTotalPreviousIteration = 0;   % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
-flagBondYield = zeros(nBonds,1);
+startLoadMultiplier = 0.1 ;
+finalLoadMultiplier = 10;
+incrementLoadMultiplier = 0.1;
+deformedCoordinates = undeformedCoordinates;    % For the first iteration, deformedCoordinates is equal to undeformedCoordinates
+nBondsBrokenTotalPreviousIteration = 0;         % Total number of bonds broken (previous iteration) - used to track number of bonds broken per iteration
+flagBondSoftening = zeros(nBonds,1);
+bondSofteningFactor = zeros(nBonds,1);
+MAXBODYFORCE = -500000000;
 
 % Failure functionality
-
 if strcmp(config.failureFunctionality ,'on')
     
     failureFunctionality = 0;
@@ -83,38 +87,46 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
     Fext = startFext * loadMultiplier;
     
     % Calculate the global stiffness matrix for the undeformed member
-    K = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,constrainedDOF);
+    K = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH);
     
     % Calculate the change in displacement (DELTA U)
-    deltaDisplacementVector = symmlq(K,deltaF,[],5000); % Using symmetric LQ method
+    [deltaDisplacementVector] = bicgstabl(K,deltaF,[],5000); % Using symmetric LQ method or lsqr
     
     % Update nodal coordinates
     [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
 
     % Calculate bond stretch
-    [~,~,~,~,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
-    %[~,~,~,stretch] = calculatedeformedlength2D(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,nBonds,BONDLIST);
+    [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
     
-    % Calculate plastic stretch for steel-steel bonds
-    % [stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
-    % sum(flagBondYield)
-    
+    % Calculate bond softening factor for bilinear material model
+    [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
+      
     % Calculate bond failure
-    fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
+    fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,s0 * 25,1);
     
     % Did any bonds fail or yield?
     [nBondsBrokenTotal,nBondsBrokenCurrentIteration] = trackbondfailure(nBonds,fail,nBondsBrokenTotalPreviousIteration);
         
     % Calculate the internal force vector
-    Fint = K * totalDisplacementVector;
+    % Step 1: calculate bond forces
+    % Step 2: calculate nodal forces
+    % Step 3: re-arrange into Fint vector
+    [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
+    [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,0); 
+    nodalForce = nodalForce * cellVolume;
+    Fint = reshape(nodalForce',[1 size(nodalForce,1) * size(nodalForce,2)])';
+    Fint(constrainedDOF,:) = [];
          
     % Check the convergence criteria
-    [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);
+    [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,-Fint);
     
-    fprintf('Displacement = %.6fmm \n', (deformedCoordinates(87,3) - undeformedCoordinates(87,3))*1000)
+    fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
+    
+    CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(15,1) - undeformedCoordinates(15,1));
+    fprintf('CMOD = %.6f mm \n', CMOD * 1000)
     
     damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-    plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates)*0, damage, 'damage')
+    plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates), damage, 'damage', 20, 100)
     drawnow
     
     % ------------------- START ITERATIVE PROCEDURE -----------------------
@@ -128,38 +140,44 @@ for loadMultiplier = startLoadMultiplier : incrementLoadMultiplier : finalLoadMu
         
         iterativeCounter = iterativeCounter + 1;
     
-        % Update the stiffness matrix
-        Ktangent = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,constrainedDOF); 
+        % Build the tangent stiffness matrix (update stiffness matrix)
+        Ktangent = buildstiffnessmatrix(deformedCoordinates,BONDLIST,VOLUMECORRECTIONFACTORS,cellVolume,BONDSTIFFNESS,BFMULTIPLIER,fail,bondSofteningFactor,constrainedDOF,UNDEFORMEDLENGTH); 
         
         % Calculate the change in displacement (delta U)
-        deltaDisplacementVector = symmlq(Ktangent,g,[],5000); % Using symmetric LQ method ,[],[],totalDisplacementVector)
+        [deltaDisplacementVector] = lsqr(Ktangent,g,[],5000); % Using symmetric LQ method or lsqr (Ktangent,g,[],5000)
         
         % Update nodal coordinates
         [deformedCoordinates,~,totalDisplacementVector] = updatecoordinates(undeformedCoordinates,deformedCoordinates,deltaDisplacementVector,unconstrainedDOF,constrainedDOF);
 
         % Calculate bond stretch
-        [~,~,~,~,stretch] = calculatedeformedlength(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,deformedZ,nBonds,BONDLIST);
-        %[~,~,~,stretch] = calculatedeformedlength2D(deformedCoordinates,UNDEFORMEDLENGTH,deformedX,deformedY,nBonds,BONDLIST);
+        [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
         
-        % Calculate plastic stretch for steel-steel bonds
-        %[stretchPlastic,yieldingLength,flagBondYield] = calculateplasticstretch(yieldingLength,flagBondYield,stretch,BONDTYPE,deformedLength);
-        
+        % Calculate bond softening factor for bilinear material model
+        [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
+      
         % Calculate bond failure
-        fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,criticalStretchConcrete,criticalStretchSteel);
+        fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,s0 * 25,1);
         
         % Did any bonds fail or yield?
         [nBondsBrokenTotal,nBondsBrokenCurrentIteration] = trackbondfailure(nBonds,fail,nBondsBrokenTotalPreviousIteration);
         
         % Calculate the internal force vector
-        Fint = Ktangent * totalDisplacementVector;
-        
+        [bForceX,bForceY,bForceZ] = calculatebondforces(bForceX,bForceY,bForceZ,fail,deformedX,deformedY,deformedZ,deformedLength,stretch,stretchPlastic,nBonds,BFMULTIPLIER,BONDSTIFFNESS,cellVolume,VOLUMECORRECTIONFACTORS,bondSofteningFactor);
+        [nodalForce] = calculatenodalforces(BONDLIST,nodalForce,bForceX,bForceY,bForceZ,BODYFORCEFLAG,0); 
+        nodalForce = nodalForce * cellVolume;
+        Fint = reshape(nodalForce',[1 size(nodalForce,1) * size(nodalForce,2)])';
+        Fint(constrainedDOF,:) = [];
+         
         % Calculate the out of balance force vector and check the convergence criteria    
-        [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,Fint);      
+        [g,gEuclideanNorm,tolerance] = checkconvergencecriteria(Fext,-Fint);      
         
-        fprintf('Displacement = %.6fmm \n', (deformedCoordinates(87,3) - undeformedCoordinates(87,3))*1000)
-        
+        fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
+    
+        CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(15,1) - undeformedCoordinates(15,1));
+        fprintf('CMOD = %.6f mm \n', CMOD * 1000)
+    
         damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-        plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates)*0, damage, 'damage')
+        plotnodaldata(undeformedCoordinates, (deformedCoordinates - undeformedCoordinates), damage, 'damage', 20, 100)
         drawnow
         
     end
