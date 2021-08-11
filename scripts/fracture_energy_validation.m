@@ -45,6 +45,18 @@ fprintf('nDivX = %.0f \nnDivY = %.0f \nnDivZ = %.0f \n', nDivX, nDivY, nDivZ)
 
 MATERIALFLAG = zeros(nNodes, 1);
 
+%% Plot discretised cube
+
+figure
+scatter3(undeformedCoordinates(:,1), undeformedCoordinates(:,2), undeformedCoordinates(:,3), 7.5, 'b', 'filled')
+set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
+set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
+set(gca,'visible','off')
+axis equal
+axis tight
+view(52,30)
+set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 8, 8], 'PaperUnits', 'centimeters', 'PaperSize', [8, 8])
+
 %% Build node families 
 
 horizon = pi * DX; % 3.90 - 3.95
@@ -100,17 +112,17 @@ counter = 0;
 totalEnergy = 0;
 totalEnergySC = 0;
 tol = 0;  % tolerance
-plane_depth = 0.5 + (DX/2);
+plane_depth = (member.DEPTH/2) + (DX/2);
 
 % A = [0 0 0.525];
-% B = [0 1 0.525];
-% C = [0.02501 1 0.525];
-% D = [0.02501 0 0.525];
+% B = [1 0 0.525];
+% C = [1 0.025 0.525];
+% D = [0 0.025 0.525];
 
-% A = [0.025 0 0.525];
-% B = [0.025 1 0.525];
-% C = [0.075 1 0.525];
-% D = [0.075 0 0.525];
+% A = [0 0.025 0.525];
+% B = [1 0.025 0.525];
+% C = [1 0.075 0.525];
+% D = [0 0.075 0.525];
 
 A = [0 0 plane_depth];
 B = [0 1 plane_depth];
@@ -136,12 +148,30 @@ for kBond = 1 : nBonds
         
         counter = counter + 1;
         
-        bondEnergy = ( (bond.concrete.stiffness * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2; % * VOLUMECORRECTIONFACTORS(kBond, 1);
-        bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2; % * VOLUMECORRECTIONFACTORS(kBond, 1);
-        % bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * s0(kBond,1)^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2; % * VOLUMECORRECTIONFACTORS(kBond, 1);
+        % =================================================================
+        %                        Standard model
+        % =================================================================
+        
+        bondEnergy = ( (bond.concrete.stiffness * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;     % * VOLUMECORRECTIONFACTORS(kBond, 1);
+        % bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * bond.concrete.s0^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;    % * VOLUMECORRECTIONFACTORS(kBond, 1);
+       
+        % =================================================================
+        %                 Critical stretch corrections
+        % =================================================================
+        
+        bondEnergySC = ( (BONDSTIFFNESS(kBond,1) * s0(kBond,1)^2 * UNDEFORMEDLENGTH(kBond,1)) / 2 ) * cellVolume^2;       % * VOLUMECORRECTIONFACTORS(kBond, 1);
+        
+        % =================================================================
+        %                         Energy
+        % =================================================================
+        
         totalEnergy = totalEnergy + bondEnergy;
         totalEnergySC = totalEnergySC + bondEnergySC;
-     
+        
+        % =================================================================
+        %                     Reduced arrays
+        % =================================================================
+        
         reducedBL(counter,:) = [nodei, nodej];
         reducedUL(counter,:) = UNDEFORMEDLENGTH(kBond,1);
         reducedBS(counter,:) = BONDSTIFFNESS(kBond,1);
@@ -163,7 +193,6 @@ for kBond = 1 : size(reducedBL,1)
     nodei = reducedBL(kBond,1); % Node i
     nodej = reducedBL(kBond,2); % Node j
      
-    
     pt1 = [undeformedCoordinates(nodei,1), undeformedCoordinates(nodei,2), undeformedCoordinates(nodei,3)];
     pt2 = [undeformedCoordinates(nodej,1), undeformedCoordinates(nodej,2), undeformedCoordinates(nodej,3)];
     pts = [pt1; pt2]; % vertial concatenation
@@ -178,15 +207,15 @@ end
 % C = [1.5 + tol 1.5 + tol plane_depth];
 % D = [1.5 + tol 0.5 - tol plane_depth];
 
-plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 2.5 ) 
-% tol = 0.1; plot3( [A(1) B(1) (C(1) + tol) (D(1) + tol) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 2.5 ) % for plotting 2D view - view(90,0)
+% plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'k', 'LineWidth', 2.5 ) 
+tol = 0.1; plot3( [A(1) B(1) (C(1) + tol) (D(1) + tol) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)], 'Color', 'k', 'LineWidth', 2.5 )  % for plotting 2D view - view(90,0)
 scatter3(undeformedCoordinates(reducedBL(:,1),1), undeformedCoordinates(reducedBL(:,1),2), undeformedCoordinates(reducedBL(:,1),3), 20, 'b', 'filled')
 scatter3(undeformedCoordinates(reducedBL(:,2),1), undeformedCoordinates(reducedBL(:,2),2), undeformedCoordinates(reducedBL(:,2),3), 20, 'b', 'filled')
 
 x = max(undeformedCoordinates(:,1));
 y = max(undeformedCoordinates(:,2));
 z = max(undeformedCoordinates(:,3));
-plotcube([x y z],[0 0 0],0,1.5)
+% plotcube([x y z],[0 0 0],0,1.5)
 set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
 set(gca,'XTickLabel',[], 'YTickLabel', [], 'ZTickLabel', [])
 set(gca,'visible','off')
@@ -195,8 +224,8 @@ set(gca,'visible','off')
 % zlabel('z', 'interpreter', 'latex')
 
 axis equal
-% view(90,0)
+view(90,0)
 % set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 18, 5], 'PaperUnits', 'centimeters', 'PaperSize', [18, 5])
-view(0,0)
+% view(52,30)
 set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 8, 8], 'PaperUnits', 'centimeters', 'PaperSize', [8, 8])
     

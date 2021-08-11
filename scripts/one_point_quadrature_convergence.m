@@ -3,9 +3,9 @@
 % =========================================================================
 
 % Clear workspace 
-% close all
-% clear all
-% clc
+close all
+clear all
+clc
 
 % =========================================================================
 %                       Geometry and Discretisation
@@ -65,8 +65,8 @@ for i = 2 : 0.1 : 10
     material.concrete.fractureEnergy = 100;     % Fracture energy (N/m)
 
     % Peridynamic parameters 
-    neighbourhoodVolume = (4/3) * pi * horizon^3;                               % Neighbourhood volume for node contained within material bulk
-    % bond.concrete.stiffness = (12 * material.concrete.E) / (pi * horizon^4);    % Bond stiffness 3D
+    neighbourhoodVolume = (4/3) * pi * horizon^3;                                   % Neighbourhood volume for node contained within material bulk
+    % bond.concrete.stiffness = (12 * material.concrete.E) / (pi * horizon^4);        % Bond stiffness 3D
     % bond.concrete.s0 = sqrt( (10 * material.concrete.fractureEnergy) / (pi * bond.concrete.stiffness  * horizon^5) );  % critical stretch
     % W_PD = (pi * bond.concrete.stiffness * bond.concrete.s0^2 * horizon^4) / 4;
     
@@ -81,7 +81,6 @@ for i = 2 : 0.1 : 10
     % Output
     [strainenergydensityFA, strainenergydensityPA] = calculatediscretestrainenergydensity(BONDLIST, nNodes, bond.concrete.stiffness, bond.concrete.s0, cellVolume, UNDEFORMEDLENGTH, VOLUMECORRECTIONFACTORS, horizon);
 
-
     m_ratio(counter,1) = horizon / DX;
     
     error(counter,1) = (max(nFAMILYMEMBERS) * cellVolume) / neighbourhoodVolume;  % FA
@@ -89,7 +88,6 @@ for i = 2 : 0.1 : 10
     
     error_3(counter,1) = max(strainenergydensityFA) / W_PD;                       % FA strain energy density
     error_4(counter,1) = max(strainenergydensityPA) / W_PD;                       % PA - PDLAMMPS strain energy density
-
 
 end
 

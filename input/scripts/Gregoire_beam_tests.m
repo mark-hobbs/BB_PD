@@ -99,12 +99,16 @@
 close all
 clear all
 clc
+fprintf('\n\n\n====================================================\n')
+fprintf('           CHECK MATERIAL PARAMETERS!               \n')
+fprintf('====================================================\n\n\n')
+
 fprintf('Module 1: Create input data file \n')
 
 %% Geometry and Discretisation 
 
 member.NOD = 3;             % Number of degrees of freedom
-member.LENGTH = 0.175;      % x-axis (m) 
+member.LENGTH = 0.175;       % x-axis (m) 
 member.WIDTH = 0.05;        % y-axis (m) 
 member.DEPTH = 0.05;        % z-axis (m)
 
@@ -137,9 +141,9 @@ CONSTRAINTFLAG = zeros(nNodes, member.NOD);   % Create flag to identify constrai
 
 %% Build supports 
 
-supportRadius = 5 * DX;
-searchRadius = 10.1 * DX;
-supportCentreX = [ (DX * (0.025/DX)) , DX * (0.15/DX) + DX ];
+supportRadius = 5 * DX;     % (5 * DX = 25mm)
+searchRadius = 10.1 * DX;   % (10.1 * DX = 50.5mm)
+supportCentreX = [ (DX * ((0.5 * member.DEPTH)/DX)) , DX * ((3 * member.DEPTH)/DX) + DX ];
 supportCentreZ = - supportRadius + DX;
 supports(1) = buildpenetrator(1, supportCentreX(1,1), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
 supports(2) = buildpenetrator(2, supportCentreX(1,2), supportCentreZ, supportRadius, searchRadius, undeformedCoordinates);
@@ -152,8 +156,8 @@ clear supportRadius searchRadius supportCentreX supportCentreZ
 
 %% Build rigid penetrator 
 
-penetratorRadius = 10 * DX;
-searchRadius = 15.1 * DX;
+penetratorRadius = 10 * DX;     % (10 * DX = 50mm) (60 * DX = 300mm)
+searchRadius = 15.1 * DX;       % (15.1 * DX = 75.5mm) (62.1 * DX = 310.5mm)
 penetratorCentreX = (nDivX/2) * DX;
 penetratorCentreZ = (nDivZ * DX) + penetratorRadius;  
 penetrator = buildpenetrator(1, penetratorCentreX, penetratorCentreZ, penetratorRadius, searchRadius, undeformedCoordinates);
@@ -183,7 +187,7 @@ horizon = pi * DX; % Be consistent - this is also known as the horizonRadius
 
 %% Build half or fifth-notch
 
-[BONDLIST, UNDEFORMEDLENGTH] = buildnotch(undeformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, DX, 18, 2.1);
+% [BONDLIST, UNDEFORMEDLENGTH, nFAMILYMEMBERS, NODEFAMILYPOINTERS, NODEFAMILY] = buildnotch(undeformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, DX, 140, 40.1);
 
 %% Volume correction factors 
 
@@ -211,33 +215,40 @@ bond.steel.sc = 1;
 %% Bond stiffness correction (surface effects)
 
 % Calculate bond type and bond stiffness (plus stiffness correction)
-[BONDSTIFFNESS,BONDTYPE,BFMULTIPLIER] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bond.concrete.stiffness,bond.steel.stiffness,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
+[BONDSTIFFNESS,BONDTYPE,~,~] = buildbonddata(BONDLIST,nFAMILYMEMBERS,MATERIALFLAG,bond.concrete.stiffness,bond.steel.stiffness,cellVolume,neighbourhoodVolume,VOLUMECORRECTIONFACTORS);
 
-% G0 = 0.005339846 * 1000; % N/mm -> N/m
+%% Fracture energy corrections - TO FINISH
  
-% for i = 1 : size(BONDLIST, 1)
-%     
-%     % s0(i,1) = sqrt((10 * G0) / (pi * BONDSTIFFNESS(i,1) * horizon^5));
-%     
-%     beta = 0.25;
-%     gamma = (2 + 2 * beta) / (2 * beta * (1 - beta));
-%     s0 = 9.4595E-05;
-%     sc(i,1) = (10 * gamma * material.concrete.fractureEnergy) / (pi * horizon^5 * BONDSTIFFNESS(i,1) * s0 * (1 + gamma * beta)) + s0;
-%     s1(i,1) = (sc(i,1) - s0) /  gamma + s0;
-%         
-% end
+for i = 1 : size(BONDLIST, 1)
+    
+    s0(i,1) = (3.9E6 / material.concrete.E);
+    
+    % Trilinear
+    % beta = 0.25;
+    % gamma = (2 + 2 * beta) / (2 * beta * (1 - beta));
+    % sc(i,1) = (10 * gamma * material.concrete.fractureEnergy) / (pi * horizon^5 * BONDSTIFFNESS(i,1) * s0 * (1 + gamma * beta)) + s0;
+    % s1(i,1) = (sc(i,1) - s0) /  gamma + s0;
+        
+    % Decaying exponential
+    k = 25;
+    alpha = 0.25;
+    sc(i,1) = (10 * k * (1 - exp(k)) * (material.concrete.fractureEnergy - (pi * BONDSTIFFNESS(i,1) * horizon^5 * s0(i,1)^2 * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2)) / (10 * k * (exp(k) - 1) * (alpha + 1))) * (alpha + 1)) / (BONDSTIFFNESS(i,1) * horizon^5 * s0(i,1) * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
+
+end
+
+clear i beta gamma k alpha; 
 
 %% Simulation Parameters
 
-SAFETYFACTOR = 1;                                                                                                          % Time step safety factor - to reduce time step size and ensure stable simulation
-DT = (0.8 * sqrt(2 * material.concrete.density * DX / (pi * horizon^2 * DX * bond.concrete.stiffness))) / SAFETYFACTOR;     % Minimum stable time step
+simulation.SAFETYFACTOR = 1;                                                                                                                    % Time step safety factor - to reduce time step size and ensure stable simulation
+simulation.DT = (0.8 * sqrt(2 * material.concrete.density * DX / (pi * horizon^2 * DX * bond.concrete.stiffness))) / simulation.SAFETYFACTOR;   % Minimum stable time step
 
-nTimeSteps = 200000;              % Number of time steps
-DAMPING = 0;                      % Damping coefficient
-appliedDisplacement = -0.5E-3;    % Applied displacement (m)
-referenceNode = 18;               % Define a reference point/node for measuring deflections
-timeStepTracker = 1;              % Tracker for determining previous time step when restarting simulations
-
+simulation.nTimeSteps = 200000;              % Number of time steps
+simulation.DAMPING = 0;                      % Damping coefficient
+simulation.appliedDisplacement = -1E-3;      % Applied displacement (m) (-0.5E-3)
+simulation.referenceNode = 18;               % Define a reference point/node for measuring deflections (18, 35, 70, 140)
+simulation.CMOD = [10 25];                   % Define reference nodes for measuring CMOD ([10 25], [25 45], [50 90], [100 180])
+simulation.timeStepTracker = 1;              % Tracker for determining previous time step when restarting simulations
 
 % Calculate applied body force per node (cell)
 % MAXBODYFORCE = calculateappliedbodyforce(BODYFORCEFLAG,appliedLoad,cellVolume);

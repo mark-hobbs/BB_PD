@@ -36,7 +36,7 @@ plotdeformedmember(undeformedCoordinates, undeformedCoordinates, MATERIALFLAG)
 
 %% Calculate and plot damage for every node
 damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
-plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX , 0, 5)    % (damage - 1) * -1
+plotbonddamage(undeformedCoordinates, deformedCoordinates, damage, DX , 5, 0)    % (damage - 1) * -1
 % plotnodaldata(undeformedCoordinates, nodalDisplacement, damage, 'Damage', 10, 0)
 
 %% Plot the fracture path
@@ -45,15 +45,15 @@ plotfracturepath(undeformedCoordinates, deformedCoordinates, damage, 0, 1, 25)
 %% Calculate and plot softening damage for every node
 flagBondSoftening = - (flagBondSoftening - 1);  % Switch flag value. This is to ensure compatibility with calculatedamage()
 softeningDamage = calculatedamage(BONDLIST, flagBondSoftening, nFAMILYMEMBERS);
-% plotbonddamage(undeformedCoordinates, deformedCoordinates, softeningDamage, DX , 10, 0)
-plotnodaldata(undeformedCoordinates, nodalDisplacement, softeningDamage, 'Softening Damage', 50, 0)
+% plotbonddamage(undeformedCoordinates, deformedCoordinates, softeningDamage, DX , 10, 100)
+plotnodaldata(undeformedCoordinates, nodalDisplacement, softeningDamage, 'Softening Damage', 5, 5)
 
 %% Bond Stretch - plot stretch of every bond 
 % TODO: seperate calculation of max stretch etc and plotnodaldata()
 
 [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
 
-plotstretch(stretch, fail, BONDLIST, undeformedCoordinates, nodalDisplacement, DX, 100, 20);    
+plotstretch(stretch, fail, BONDLIST, undeformedCoordinates, nodalDisplacement, DX, 0, 20);    
 
 %% Plot fracture process zone
 

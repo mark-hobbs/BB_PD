@@ -1,5 +1,6 @@
-function [BONDLIST, UNDEFORMEDLENGTH] = buildnotch(undeformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, DX, xlocation, depth)
+function [BONDLIST, UNDEFORMEDLENGTH, nFAMILYMEMBERS, NODEFAMILYPOINTERS, NODEFAMILY] = buildnotch(undeformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, DX, xlocation, depth)
 
+nNodes = size(undeformedCoordinates,1);
 nBonds = size(BONDLIST,1);
 
 x_max = max(undeformedCoordinates(:,1));
@@ -64,5 +65,58 @@ axis equal
 
 BONDLIST(delete,:) = []; % Delete bonds that cross the notch
 UNDEFORMEDLENGTH(delete,:) = [];  
+
+% ==========================
+%   Rebuild node families 
+% ==========================
+
+nBonds = size(BONDLIST,1);
+nFAMILYMEMBERS = zeros(nNodes,1);
+NODEFAMILYPOINTERS = zeros(nNodes,1);
+
+for kBond = 1 : nBonds
+    
+    nodei = BONDLIST(kBond, 1);
+    nodej = BONDLIST(kBond, 2);
+
+    nFAMILYMEMBERS(nodei,1) = nFAMILYMEMBERS(nodei,1) + 1;
+    nFAMILYMEMBERS(nodej,1) = nFAMILYMEMBERS(nodej,1) + 1;
+    
+end
+
+for kNode = 1 : nNodes
+        
+    % Create a list of pointers to node family members
+    if kNode == 1
+        
+        NODEFAMILYPOINTERS(kNode,1) = 1;
+    
+    else
+        
+        NODEFAMILYPOINTERS(kNode,1) = NODEFAMILYPOINTERS(kNode - 1) + nFAMILYMEMBERS(kNode - 1);
+    
+    end
+          
+end
+
+NODEFAMILY = zeros( (NODEFAMILYPOINTERS(nNodes,1) + nFAMILYMEMBERS(nNodes,1) - 1) , 1);
+counter = zeros(nNodes,1);
+
+for kBond = 1 : nBonds
+    
+    nodei = BONDLIST(kBond, 1);
+    nodej = BONDLIST(kBond, 2);
+      
+    index_i = NODEFAMILYPOINTERS(nodei,1) + counter(nodei,1);
+    index_j = NODEFAMILYPOINTERS(nodej,1) + counter(nodej,1);
+    
+    counter(nodei,1) = counter(nodei,1) + 1;
+    counter(nodej,1) = counter(nodej,1) + 1;
+    
+    NODEFAMILY(index_i,1) = nodej;
+    NODEFAMILY(index_j,1) = nodei; 
+    
+end
+
 
 end

@@ -36,7 +36,9 @@ void calculatenodalforces(int nBonds, int nNodes, double *bl_ptr, double *nodalF
 
     // See the following forum for more details; http://forum.openmp.org/forum/viewtopic.php?f=3&t=1693
 
-#pragma omp parallel shared(bl_ptr, nBonds, nNodes, nodalForce, bForceX, bForceY, bForceZ, nfSharedX, nfSharedY, nfSharedZ) private(kBond, kNode, kThread, nodei, nodej, nThreads, iThread)
+    omp_set_num_threads(8);  // This is required to prevent a segfault (number of hyperthreads = 16)
+
+#pragma omp parallel default(none) shared(bl_ptr, nBonds, nNodes, nodalForce, bForceX, bForceY, bForceZ, nfSharedX, nfSharedY, nfSharedZ) private(kBond, kNode, kThread, nodei, nodej, nThreads, iThread)
     {
         
         nThreads = omp_get_num_threads();   // Number of threads
@@ -108,7 +110,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     nfX_ptr = mxGetPr(prhs[5]);    // nodal force X-component pointer (nNodes x nThreads)
     nfY_ptr = mxGetPr(prhs[6]);    // nodal force Y-component pointer (nNodes x nThreads)
     nfZ_ptr = mxGetPr(prhs[7]);    // nodal force Z-component pointer (nNodes x nThreads)
-
     
     calculatenodalforces(nBonds, nNodes, bl_ptr, nf_ptr, bfX_ptr, bfY_ptr, bfZ_ptr, nfX_ptr, nfY_ptr, nfZ_ptr);
 

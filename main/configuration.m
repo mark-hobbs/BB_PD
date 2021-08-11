@@ -63,22 +63,19 @@ config.dynamicsolverinputlist = {'undeformedCoordinates'...    % (nNodes , NOD)
                                 'BONDSTIFFNESS'...             % (nBonds , 1)
                                 'BONDTYPE'...                  % (nBonds , 1)
                                 'VOLUMECORRECTIONFACTORS'...   % (nBonds , 1)
-                                's0'...                        % (nBonds , 1)
-                                's1'...                        % (nBonds , 1)
-                                'sc'...                        % (nBonds , 1)
                                 'cellVolume'...                % (1 , 1)
                                 'DX'...                        % (1 , 1)
-                                'DAMPING'...                   % (1 , 1)
-                                'nTimeSteps'...                % (1 , 1)
-                                'DT'...                        % (1 , 1)
-                                'timeStepTracker'...           % (1 , 1)
+                                's0'...                        % (nBonds , 1)
+                                's1'...                        % (nBonds , 1)
+                                'sc'...                        % (nBonds , 1)  
                                 'penetrator'...                % (structure)
                                 'supports'...                  % (structure)
                                 'material'...                  % (structure)
                                 'bond'...                      % (structure)
-                                'referenceNode'...             % (1 , 1)
-                                'appliedDisplacement'};        % (1 , 1)
+                                'simulation'};                 % (structure)
+                                                              
                             
+                                
 % Dynamic termination method (on/off)
 config.dynamicSimulationTermination = 'off';
 

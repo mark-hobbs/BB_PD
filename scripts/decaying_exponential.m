@@ -5,21 +5,24 @@
 clear all
 % close all
 
-s = [0 : 0.00000001 : 1E-2]';
-k = 20;              % Rate of decay
+s = [0 : 0.00000001 : 2E-2]';
+k = 25;              % Rate of decay
 k_new = 1000;        % Rate of decay
-alpha = 1/3;         % Asymptote
-s0 = 9.46E-5; % / ( 1 + alpha );
-sc = 2.19E-3;
+alpha = 0.25;         % Asymptote
+
     
-GF = 133.496;
-c = 2.3214e18;
-delta = 15.708 / 1000;
+DX = 5 / 1000;
+horizon = pi * DX;
+GF = 143.24;
+E = 37E9;
+c = (12 * E) / (pi * horizon^4);
+s0 = (6 * 3.9E6) / (pi * c * horizon^4);
+s0 = 1.05E-4; % / ( 1 + alpha );
 
 % Abaqus CZM
 % sc = (GF + (pi * c * delta^5 * s0^2)/(5 * k) - (pi * c * delta^5 * s0^2 * (alpha - alpha * exp(k) + 1)) / (5 * (exp(k) - 1))) / ((pi * c * delta^5 * s0)/(5 * k) - (pi * c * delta^5 * s0 * (alpha - alpha * exp(k) + 1)) / (5 * (exp(k) - 1)));
 % sc = (10 * GF * k - 10 * GF * k * exp(k) + 2 * pi * c * delta^5 * s0^2 + 2 * pi * c * delta^5 * k * s0^2 - 2 * pi * c * delta^5 * s0^2 * exp(k) + pi * alpha * c * delta^5 * k * s0^2 - pi * alpha * c * delta^5 * k * s0^2 * exp(k))/(c * delta^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
-sc = (10 * GF * k + 10 * GF * alpha * k - 10 * GF * k * exp(k) - 10 * GF * alpha * k * exp(k) + 2 * pi * c * delta^5 * s0^2 + 2 * pi * c * delta^5 * k * s0^2 - 2 * pi * c * delta^5 * s0^2 * exp(k) + pi * alpha * c * delta^5 * k * s0^2 - pi * alpha * c * delta^5 * k * s0^2 * exp(k)) / (c * delta^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
+sc = (10 * k * (1 - exp(k)) * (GF - (pi * c * horizon^5 * s0^2 * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2)) / (10 * k * (exp(k) - 1) * (alpha + 1))) * (alpha + 1)) / (c * horizon^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
 
 % Tong model
 % s0 = sqrt((10 * material.concrete.fractureEnergy)/(pi * bond.concrete.stiffness * delta^5)) / sqrt(1 + (2/k));
@@ -93,11 +96,16 @@ hold on
 
 xlabel('stretch', 'interpreter', 'latex', 'FontSize', 10)
 ylabel('force', 'interpreter', 'latex', 'FontSize', 10)
-text1 = ['Abaqus CZM \(k\) = ', num2str(k), ' \(s_c\) = ', num2str(sc), ' \(s_c/s_0\) = ', num2str(sc/s0)];
-text2 = ['Standard exponential function \(k\) = ', num2str(k)];
-legend(text1, text2 , 'interpreter' , 'latex', 'FontSize' , 8)
+% text1 = ['Abaqus CZM \(k\) = ', num2str(k), ' \(s_c\) = ', num2str(sc), ' \(s_c/s_0\) = ', num2str(sc/s0)];
+% text2 = ['Standard exponential function \(k\) = ', num2str(k)];
+text1 = ['\(k\) = 25 \(\alpha\) = 0.1'];
+text2 = ['\(k\) = 25 \(\alpha\) = 0.25'];
+text3 = ['\(k\) = 25 \(\alpha\) = 0.5'];
+legend(text1, text2 , text3, 'interpreter' , 'latex', 'FontSize' , 8)
 set(gca,'TickLabelInterpreter', 'latex') % gca returns the current axes (get current axis handle)
 set(gca,'fontsize', 8)                   % Default is 10
+set(gca,'XTick',[], 'YTick', [])         % Remove axis values
+set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 12, 8], 'PaperUnits', 'centimeters', 'PaperSize', [12, 8])
 
 
 

@@ -23,7 +23,4 @@ criticalTimeStep = sqrt(numeratorCriticalTimeStep ./ denominatorCriticalTimeStep
 % The critical time step is the minimum value of criticaltimestep vector
 DT = min(criticalTimeStep);
 
-% 1.5573e-5 using this function
-% 1.1296e-6 using previous equation
-
 end 

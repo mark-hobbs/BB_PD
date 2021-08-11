@@ -28,7 +28,7 @@ void calculatedeformedlength(double *deformedCoordinates, double *bl_ptr, double
 {
     int kBond, nodei, nodej;
 
-#pragma omp parallel for shared(bl_ptr, nBonds, deformedX, deformedY, deformedZ, deformedCoordinates, length_ptr, stretch, undeformedLength) private(kBond, nodei, nodej)
+#pragma omp parallel for default(none) shared(bl_ptr, nNodes, nBonds, deformedX, deformedY, deformedZ, deformedCoordinates, length_ptr, stretch, undeformedLength) private(kBond, nodei, nodej)
     for (kBond = 0; kBond < nBonds; kBond++)
     {
         nodei = *(bl_ptr + kBond);              // BONDLIST[kBond][0];

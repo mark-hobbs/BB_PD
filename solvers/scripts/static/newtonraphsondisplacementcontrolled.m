@@ -1,7 +1,9 @@
 function [deformedCoordinates,fail,stretch] = newtonraphsondisplacementcontrolled(inputdatafilename, config)
-% newtonraphsondisplacementcontrolled - this function uses a standard
-% Newton-Rapshon procedure to solve the static peridynamic equation of
-% motion. Bond failure is not permitted with this method. 
+% newtonraphsondisplacementcontrolled - this function uses a
+% displacement-controlled Newton-Rapshon procedure to solve the static
+% peridynamic equation of motion. The solver is based on that described in
+% Section 2.6 of 'Non-linear finite element analysis of solids and
+% structures' De Borst et al., 2012
 %
 % Syntax: 
 %
@@ -55,7 +57,6 @@ DISPLACEMENTFLAG = zeros(nNodes,NOD);
 MAXBODYFORCE = 0;
 
 % Failure functionality
-
 if strcmp(config.failureFunctionality ,'on')
     
     failureFunctionality = 0;
@@ -76,9 +77,11 @@ Fext = zeros(nNodes * NOD, 1);      % Internal force vector (nNodes x NOD, 1)
 Fext(constrainedDOF,:) = [];   
 
 % ------------------- START DISPLACEMENT INCREMENT ------------------------
+
 counter = 0;
+
 % Loop to incrementally increase the externally applied displacement
-for iTimeStep = 1 : nTimeSteps
+for iTimeStep = 1 : simulation.nTimeSteps % TODO - number of loading steps
     
     fprintf('\n\n')
         
@@ -88,14 +91,15 @@ for iTimeStep = 1 : nTimeSteps
     % positions for nodes that lie within the rigid penetrator and flag
     % applied displacements
     % displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
-    % [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, -0.0000002*counter, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
-       
+    % [nodalDisplacement, deformedCoordinates, DISPLACEMENTFLAG] = applydisplacement(penetrator, - 0.000002 * counter, undeformedCoordinates, deformedCoordinates, nodalDisplacement);
+                
     for i = 1 : nNodes
       
         if BODYFORCEFLAG(i,3) == 1
         
-            DISPLACEMENTFLAG(i,3) = 1;      
-            nodalDisplacement(i,3) = - 0.000002 * counter;
+            DISPLACEMENTFLAG(i,3) = 1;
+            
+            nodalDisplacement(i,3) = - 0.000001 * counter;
         
         end
         
@@ -127,7 +131,7 @@ for iTimeStep = 1 : nTimeSteps
     
     % Update nodal coordinates
     U = C * deltaDisplacementVector;
-    U(applieddisplacementDOF,:) = - 0.000002;
+    U(applieddisplacementDOF,:) = - 0.000001;
     deltaDisplacement = reshape(U,NOD,[])';                            % Re-shape (nNodes, NOD)
     deformedCoordinates = deformedCoordinates + deltaDisplacement;     % Update coordinates <------------- LOOK AT THIS!
     
@@ -143,10 +147,10 @@ for iTimeStep = 1 : nTimeSteps
     [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
     
     % Calculate bond softening factor for bilinear material model
-    [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
+    [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
       
     % Calculate bond failure
-    fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,s0 * 25,1);
+    fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,bond.concrete.s0 * 25,1);
     
     % Did any bonds fail or yield?
     [nBondsBrokenTotal,nBondsBrokenCurrentIteration] = trackbondfailure(nBonds,fail,nBondsBrokenTotalPreviousIteration);
@@ -164,7 +168,7 @@ for iTimeStep = 1 : nTimeSteps
     
     fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
     
-    CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(15,1) - undeformedCoordinates(15,1));
+    CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(10,1) - undeformedCoordinates(10,1));
     fprintf('CMOD = %.6f mm \n', CMOD * 1000)
     
     damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);
@@ -197,10 +201,10 @@ for iTimeStep = 1 : nTimeSteps
         [deformedLength,deformedX,deformedY,deformedZ,stretch] = calculatedeformedlength(deformedLength,deformedX,deformedY,deformedZ,stretch,deformedCoordinates,UNDEFORMEDLENGTH,BONDLIST,nBonds);
         
         % Calculate bond softening factor for bilinear material model
-        [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
+        [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
       
         % Calculate bond failure
-        fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,s0 * 25,1);
+        fail = calculatebondfailure(fail,failureFunctionality,BONDTYPE,stretch,bond.concrete.s0 * 25,1);
         
         % Did any bonds fail or yield?
         [nBondsBrokenTotal,nBondsBrokenCurrentIteration] = trackbondfailure(nBonds,fail,nBondsBrokenTotalPreviousIteration);
@@ -217,7 +221,7 @@ for iTimeStep = 1 : nTimeSteps
         
         fprintf('Displacement = %.6f mm \n', (deformedCoordinates(18,3) - undeformedCoordinates(18,3)) * 1000)
     
-        CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(15,1) - undeformedCoordinates(15,1));
+        CMOD = (deformedCoordinates(25,1) - undeformedCoordinates(25,1)) - (deformedCoordinates(10,1) - undeformedCoordinates(10,1));
         fprintf('CMOD = %.6f mm \n', CMOD * 1000)
     
         damage = calculatedamage(BONDLIST, fail, nFAMILYMEMBERS);

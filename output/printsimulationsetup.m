@@ -106,18 +106,18 @@ fprintf('\tcritical stretch s_c: %14.3E \n\n', bond.concrete.sc)
 %                        Simulation Paramaters
 % =========================================================================
 
-fprintf('Time Step Size DT:%20.5E s \n', DT)                                % Time Step Size (Field width = 38)
-fprintf('Number of Time Steps:%17d \n', nTimeSteps)                         % Number of Time Steps 
-fprintf('Simulation Time:%22.5f s \n', (DT * nTimeSteps))                   % Total Simulation Time
-fprintf('Damping:%30d \n', DAMPING)                                         % Damping
-fprintf('Applied Displacement:%17.2f mm \n\n', appliedDisplacement * m_mm)  % Applied displacement
+fprintf('Time Step Size DT:%20.5E s \n', simulation.DT)                                % Time Step Size (Field width = 38)
+fprintf('Number of Time Steps:%17d \n', simulation.nTimeSteps)                         % Number of Time Steps 
+fprintf('Simulation Time:%22.5f s \n', (simulation.DT * simulation.nTimeSteps))        % Total Simulation Time
+fprintf('Damping:%30d \n', simulation.DAMPING)                                         % Damping
+fprintf('Applied Displacement:%17.2f mm \n\n', simulation.appliedDisplacement * m_mm)  % Applied displacement
 
 % =========================================================================
 %                        Output Configuration
 % =========================================================================
 
 % Reference point/node for measuring deflections
-fprintf('Reference point: \t node %d (%.4f m, %.4f m, %.4f m) \n\n', referenceNode, undeformedCoordinates(referenceNode,1), undeformedCoordinates(referenceNode,2), undeformedCoordinates(referenceNode,3))  
+fprintf('Reference point: \t node %d (%.4f m, %.4f m, %.4f m) \n\n', simulation.referenceNode, undeformedCoordinates(simulation.referenceNode,1), undeformedCoordinates(simulation.referenceNode,2), undeformedCoordinates(simulation.referenceNode,3))  
 
 % =========================================================================
 %                        Additional Details

@@ -31,7 +31,6 @@ nBonds = size(bondlist,1);
 damage = zeros(nNodes,1);
 unbrokenBonds = zeros(nNodes,1);
 
-
 for kBond = 1 : nBonds
     
     nodei = bondlist(kBond,1);

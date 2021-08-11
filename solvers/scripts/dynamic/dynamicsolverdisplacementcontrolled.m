@@ -1,4 +1,4 @@
-function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, checkpointfileflag, checkpointfilename)
+function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, nThreads, checkpointfileflag, checkpointfilename)
 % -------------------------------------------------------------------------
 % Dynamic Solver Displacement Controlled
 % -------------------------------------------------------------------------
@@ -7,6 +7,7 @@ function [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputd
 % INPUT:
 %   inputdatafilename - name of input file
 %   config - configuration file
+%   nThreads - Number of OpenMP threads
 %
 % OUTPUT:
 %   deformedCoordinates - coordinates of deformed nodes
@@ -30,8 +31,9 @@ if checkpointfileflag == false
 
     MAXBODYFORCE = 0;                               % function calculatenodalforce requires this input
     deformedCoordinates = undeformedCoordinates;    % At t = 0, deformedCoordinates = undeformedCoordinates
-    frequency = 200;
-    BFMULTIPLIER = ones(nBonds,1);
+    frequency = 200;                                % Frequency at which data is printed to output
+    bsf = zeros(nBonds,1);
+    damageEnergy = zeros(nBonds,1);
 
 end
 
@@ -49,44 +51,44 @@ end
 
 %% Dynamic solver: displacement-controlled
 
-
-nodalForceX = zeros(nNodes,4);
-nodalForceZ = zeros(nNodes,4);
-nodalForceY = zeros(nNodes,4);
+nodalForceX = zeros(nNodes, nThreads); 
+nodalForceZ = zeros(nNodes, nThreads);
+nodalForceY = zeros(nNodes, nThreads);
 
 printoutputheader();
 
-k = 20;             % rate of decay
-alpha = 0.1;
-delta = pi * DX;
-s0 = 9.46E-5;
-GF = material.concrete.fractureEnergy;
-c = bond.concrete.stiffness;
-sc = (10 * GF * k + 10 * GF * alpha * k - 10 * GF * k * exp(k) - 10 * GF * alpha * k * exp(k) + 2 * pi * c * delta^5 * s0^2 + 2 * pi * c * delta^5 * k * s0^2 - 2 * pi * c * delta^5 * s0^2 * exp(k) + pi * alpha * c * delta^5 * k * s0^2 - pi * alpha * c * delta^5 * k * s0^2 * exp(k)) / (c * delta^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
-
-
 tic
 
+% k = 25;
+% alpha = 0.25;
+% GF = material.concrete.fractureEnergy;
+% c = bond.concrete.stiffness;
+% horizon = pi * DX;
+% s0 = 1.0541E-04;
+% sc = (10 * k * (1 - exp(k)) * (GF - (pi * c * horizon^5 * s0^2 * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2)) / (10 * k * (exp(k) - 1) * (alpha + 1))) * (alpha + 1)) / (c * horizon^5 * s0 * pi * (2 * k - 2 * exp(k) + alpha * k - alpha * k * exp(k) + 2));
+
 % Time Stepping Loop
-for iTimeStep = timeStepTracker : nTimeSteps
+for iTimeStep = simulation.timeStepTracker : simulation.nTimeSteps
     
-    timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
+    simulation.timeStepTracker = iTimeStep + 1; % If a checkpoint file is loaded, the simulation needs to start on the next iteration, (tt + 1)  
     
     % Use a smooth amplitude curve to define the displacement increment at every time step
-    displacementIncrement = smoothstepdata(iTimeStep, 1, nTimeSteps, 0, appliedDisplacement);
+    displacementIncrement = smoothstepdata(iTimeStep, 1, simulation.nTimeSteps, 0, simulation.appliedDisplacement);  
     
     % Calculate deformed length of every bond
     calculatedeformedlengthMex(deformedCoordinates, BONDLIST, UNDEFORMEDLENGTH, deformedLength, deformedX, deformedY, deformedZ, stretch)
     
-    % Calculate bond softening factor for bilinear material model
-    % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.sc, flagBondSoftening, bondSofteningFactor, BONDTYPE);
-    % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, s0, s0 * 25, flagBondSoftening, bondSofteningFactor, BONDTYPE);
-    % [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, 9.4595E-05, 7.0164E-04, 5.7603E-03, bondSofteningFactor, BONDTYPE, flagBondSoftening);
-    [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, k, alpha, bondSofteningFactor, BONDTYPE, flagBondSoftening);
+    % Calculate bond softening factor
+    % [bondSofteningFactor, flagBondSoftening] = calculatebondsofteningfactor(stretch, bond.concrete.s0, bond.concrete.sc, flagBondSoftening, bondSofteningFactor, BONDTYPE);   % Bilinear 
+    % [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretch, s0, s1, sc, bondSofteningFactor, BONDTYPE, flagBondSoftening);                                  % Trilinear
+    % [bondSofteningFactor, flagBondSoftening] = calculatebsfexponential(stretch, s0, sc, 25, 0.25, bondSofteningFactor, BONDTYPE, flagBondSoftening);                          % Decaying exponential
+    
+    bsf(:,:) = 0; % Does bsf need to be initiatlised for every time step?
+    calculatebsfexponentialMex(stretch, s0, sc, 25, 0.25, bsf, bondSofteningFactor, BONDTYPE, flagBondSoftening); 
     
     % Determine if bonds have failed
-    % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, bond.concrete.sc, bond.steel.sc);
-    [fail] = calculatebondfailure(fail, failureFunctionality, BONDTYPE, stretch, sc, bond.steel.sc); 
+    % calculatebondfailureMex(fail, failureFunctionality, BONDTYPE, stretch, sc, bond.steel.sc);
+    % [fail] = calculatebondfailure(fail, failureFunctionality, BONDTYPE, stretch, sc, bond.steel.sc); 
     
     % Calculate bond force for every bond
     calculatebondforcesMex(bForceX, bForceY, bForceZ, fail, deformedX, deformedY, deformedZ, deformedLength, stretch, stretchPlastic, BONDSTIFFNESS, cellVolume, VOLUMECORRECTIONFACTORS, bondSofteningFactor);
@@ -99,29 +101,33 @@ for iTimeStep = timeStepTracker : nTimeSteps
     calculatenodalforcesopenmpMex(BONDLIST, nodalForce, bForceX, bForceY, bForceZ, nodalForceX, nodalForceY, nodalForceZ)
         
     % Time integration
-    [nodalDisplacement, nodalVelocity, deformedCoordinates,~] = timeintegrationeulercromer(nodalForce, nodalDisplacement, nodalVelocity, DAMPING, DENSITY, CONSTRAINTFLAG, undeformedCoordinates, DT, BODYFORCEFLAG, config.loadingMethod, displacementIncrement, deformedCoordinates);    
-
+    % [nodalDisplacement, nodalVelocity, deformedCoordinates,~] = timeintegrationeulercromer(nodalForce, nodalDisplacement, nodalVelocity, simulation.DAMPING, DENSITY, CONSTRAINTFLAG, undeformedCoordinates, simulation.DT, BODYFORCEFLAG, config.loadingMethod, displacementIncrement, deformedCoordinates);    
+    timeintegrationeulercromerMex(nodalAcceleration, nodalForce, simulation.DAMPING, nodalVelocity, DENSITY, CONSTRAINTFLAG, simulation.DT, nodalDisplacement, deformedCoordinates, undeformedCoordinates);
+    
     % Penetrator
-    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, penetratorfz1] = calculatecontactforce(penetrator, displacementIncrement, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, simulation.DT, cellVolume, DENSITY);
 
     % Supports
-    [nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz1] = calculatecontactforce(supports(1), 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
-    [nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz2] = calculatecontactforce(supports(2), 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, DT, cellVolume, DENSITY);
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz1] = calculatecontactforce(supports(1), 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, simulation.DT, cellVolume, DENSITY);
+    [nodalDisplacement, nodalVelocity, deformedCoordinates, supportfz2] = calculatecontactforce(supports(2), 0, undeformedCoordinates, deformedCoordinates, nodalDisplacement, nodalVelocity, simulation.DT, cellVolume, DENSITY);
     
     % Calculate reaction force
     reactionForce = penetratorfz1;
     %reactionForce = supportfz1 + supportfz2;
     
-    CMOD = nodalDisplacement(25,1) - nodalDisplacement(15,1);
+    CMOD = nodalDisplacement(simulation.CMOD(2),1) - nodalDisplacement(simulation.CMOD(1),1);
+    
+    % Dissipated damage energy
+    [damageEnergy] = calculatedamageenergy(BONDSTIFFNESS, s0, sc, UNDEFORMEDLENGTH, stretch, 25, 0.25, cellVolume, damageEnergy);
     
     % Print output to text file
-    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD);
+    printoutput(iTimeStep, frequency, reactionForce, nodalDisplacement(simulation.referenceNode,3), fail, flagBondSoftening, flagBondYield, CMOD, sum(damageEnergy));
     
     % Save output variables for postprocessing (BB_PD/output/outputfiles/inputdatafilename/)
-    % savedata(iTimeStep,1000,inputdatafilename,deformedCoordinates,fail,flagBondSoftening);
+    savedata(iTimeStep,1000,inputdatafilename,deformedCoordinates,fail,flagBondSoftening);
     
     % Save damage figure (BB_PD/output/outputfiles/inputdatafilename/)
-    % savedamagefigure(iTimeStep,200,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
+    % savedamagefigure(iTimeStep,1000,inputdatafilename,BONDLIST,fail,nFAMILYMEMBERS,undeformedCoordinates,deformedCoordinates,DX);
     
     % Save checkpoint file
     if mod(iTimeStep, 10000) == 0

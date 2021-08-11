@@ -27,7 +27,7 @@ void calculatebondforces(double *bForceX, double *bForceY, double *bForceZ, doub
 {
     int kBond;
 
-#pragma omp parallel for shared(bForceX, bForceY, bForceZ, fail, BONDSTIFFNESS, bondSofteningFactor, stretch, stretchPlastic, cellVolume, VOLUMECORRECTIONFACTORS, deformedX, deformedY, deformedZ, deformedLength) private(kBond)
+#pragma omp parallel for default(none) shared(nBonds, bForceX, bForceY, bForceZ, fail, BONDSTIFFNESS, bondSofteningFactor, stretch, stretchPlastic, cellVolume, VOLUMECORRECTIONFACTORS, deformedX, deformedY, deformedZ, deformedLength) private(kBond)
     for (kBond = 0; kBond < nBonds; kBond++)
     {
      
