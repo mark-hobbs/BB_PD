@@ -2,11 +2,13 @@
 
 BB_PD is a three-dimensional bond-based peridynamics code developed in MATLAB and C. The code is structured into three modules: (1) input module, (2) core computational kernel, (3) post-processing module. The input and output of data is controlled by a programme written in MATLAB. The core functions are written in C and called from MATLAB for optimal performance. The code makes use of shared memory parallelism using OpenMP. The scalability of the code has been tested on a Cascade Lake Node with 56 cores.
 
+## Code features
+
 ## Getting started
 
 This code was developed by **Mark Hobbs** for his PhD and has not been fully documented and tested. To understand the full capabilities of this code, please contact the author for a copy of his PhD thesis (note that this will be available online in the near future). Please feel free to contact the author if you wish to use this code and are having difficulties getting started. 
 
-All the results presented in the authors thesis were generated using this code. The examples section illustrates... 
+All the results presented in the authors thesis were generated using this code. The examples section illustrates two non-trivial fracture problems that can be simulated with ease using bond-based peridynamics. 
 
 # Examples
 
@@ -23,6 +25,10 @@ All the results presented in the authors thesis were generated using this code. 
 M. Hobbs, Three-dimensional peridynamic modelling of quasi-brittle structural elements, Department of Engineering, University of Cambridge, 2021. PhD thesis
 
 [Predicting shear failure in reinforced concrete members using a three-dimensional peridynamic framework](https://engrxiv.org/jhnd6/)
+
+## Future development
+
+There are no plans to further the development of this code but...
 
 ## PeriPy
 
