@@ -1,6 +1,6 @@
  # BB_PD
 
-BB_PD is a three-dimensional bond-based peridynamic code developed in MATLAB and C. The code is structured into three modules: (1) input module, (2) core computational kernel, (3) post-processing module. The input and output of data is controlled by a programme written in MATLAB. The core functions are written in C and called from MATLAB for optimal performance. The code makes use of shared memory parallelism using OpenMP. The scalability of the code has been tested on a Cascade Lake Node with 56 cores.
+BB_PD is a three-dimensional bond-based peridynamics code developed in MATLAB and C. The code is structured into three modules: (1) input module, (2) core computational kernel, (3) post-processing module. The input and output of data is controlled by a programme written in MATLAB. The core functions are written in C and called from MATLAB for optimal performance. The code makes use of shared memory parallelism using OpenMP. The scalability of the code has been tested on a Cascade Lake Node with 56 cores.
 
 ## Getting started
 
@@ -21,6 +21,9 @@ MAIN('Beam_4_UN_DX5mm.mat', 8)
 ## Post-processing module
 
 ## Examples
+
+![Stuttgart Shear Tests - Beam 7](docs\images\SB7_deformed.png)
+![Stuttgart Shear Tests - Beam 7](docs\images\SB7_fracture_paths.png)
 
 ## Publications
 
