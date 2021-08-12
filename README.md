@@ -20,7 +20,12 @@ MAIN('Beam_4_UN_DX5mm.mat', 8)
 
 ## Post-processing module
 
-## Examples
+# Examples
+
+## Mixed-mode fracture
+![Mixed](docs/animations/d_80mm_e_pt625d_DX1pt25mm.gif)
+
+## Shear failure
 
 ![Stuttgart Shear Tests - Beam 7](docs/images/SB7_deformed.png)
 ![Stuttgart Shear Tests - Beam 7](docs/images/SB7_fracture_paths.png)
