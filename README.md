@@ -22,8 +22,8 @@ MAIN('Beam_4_UN_DX5mm.mat', 8)
 
 ## Examples
 
-![Stuttgart Shear Tests - Beam 7](docs\images\SB7_deformed.png)
-![Stuttgart Shear Tests - Beam 7](docs\images\SB7_fracture_paths.png)
+![Stuttgart Shear Tests - Beam 7](docs/images/SB7_deformed.png)
+![Stuttgart Shear Tests - Beam 7](docs/images/SB7_fracture_paths.png)
 
 ## Publications
 
