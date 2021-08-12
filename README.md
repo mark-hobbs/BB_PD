@@ -1,62 +1,38 @@
  # BB_PD
-BB_PD is a bond based peridynamic analysis code written in MATLAB. This code has been developed primarily for the analysis of reinforced concrete members but extension to other fracture problems is possible.
-To see the code in action, simply download the code and edit the configuaration file to accept the desired test problem and run. See 'Tests' for a list of currently available test problems. 
 
-## Authors
-Mark Hobbs (mch61@cam.ac.uk), Department of Engineering, Cambridge University
+BB_PD is a three-dimensional bond-based peridynamic code developed in MATLAB and C. The code is structured into three modules: (1) input module, (2) core computational kernel, (3) post-processing module. The input and output of data is controlled by a programme written in MATLAB. The core functions are written in C and called from MATLAB for optimal performance. The code makes use of shared memory parallelism using OpenMP. The scalability of the code has been tested on a Cascade Lake Node with 56 cores.
 
-## Simulation Process
-The typical simulation process follows four steps.
-1. Create input data
-2. Build peridynamic particle families and bond lists
-3. Solve the problems using a dynamic or static solver
-4. Process and visualise the results
+## Getting started
 
-## Configuration
-- config.newInputFile = 'on/off'
-- config.loadInputDataFile = 'filename.mat'
-- config.materialModel = 'linear/bilinear/trilinear'
-- config.solver = 'dynamic/static'
-- config.failureFunctionality = 'on/off'
-- config.loadingMethod = 'loadControlled/displacementControlled'
-- config.dynamicsolverinputlist = {}
-- config.staticsolverinputlist = {}
+This code was developed for the authors PhD and has not been fully documented and tested. To understand the full capabilities of this code, please contact the author for a copy of his PhD thesis (note that this will be available online in the near future). All the results presented in the authors thesis were generated using this code.
 
+[PeriPy](https://github.com/alan-turing-institute/PeriPy) provides a lightweight, open-source and high performance python package for peridynamic simulations. PeriPy utilises the heterogeneous nature of OpenCL so that it can be executed on any platform with CPU or GPU cores. PeriPy is fully documented... recommended over this repository. 
 
-## Tests
-- A1
-- A2
-- A3
-- A4
-- B1
-- B2
-- B3
-- C1
-- C2
-- C3
-- C4
-- StuttgartBeam5
+Please feel free to contact the author if you wish to use this code and are having difficulties getting started. 
 
-## 1. Input Module
+## Input module
 
-## 2. Solver Module
+## Core computational kernel
 
-## 3. Postprocessing Module
+```
+MAIN('Beam_4_UN_DX5mm.mat', 8)
+```
 
-## Output Files
-An output file is created that logs all text output to the command window. This is formatted to ouput the following variables every
-x number of time steps.
-- Time Step
-- Reaction Force (kN)
-- Displacement (mm), user specifies the target node for measurement
-- Energy balance 
+## Post-processing module
 
-A python script is provided for parsing the text file and extracting the data in a format suitable for plotting.
+## Examples
 
-- deformedCoordinates(nNodes , NOD)
-- fail (nBonds , 1)
+## Publications
 
-## Speed Testing
+M. Hobbs, Three-dimensional peridynamic modelling of quasi-brittle structural elements, Department of Engineering, University of Cambridge, 2021. PhD thesis
 
-## Acknowledgements
+[Predicting shear failure in reinforced concrete members using a three-dimensional peridynamic framework](https://engrxiv.org/jhnd6/)
 
+[PeriPy - A High Performance OpenCL Peridynamics Package](https://arxiv.org/abs/2105.04150)
+
+[github.com/alan-turing-institute/PeriPy](https://github.com/alan-turing-institute/PeriPy)
+
+## Author
+Mark Hobbs (mch61@cam.ac.uk), Department of Engineering, University of Cambridge 
+
+Current email address - mhobbs@turing.ac.uk
