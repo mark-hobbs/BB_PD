@@ -31,7 +31,7 @@ The C code will need to be compiled to a mex function (MATLAB executable). MATLA
 
 **Windows:** if you are using a Windows machine with an Intel CPU, the author recommends the use of icc (Intel C/C++ compiler). This produces highly optimised code that will run significantly faster.
 
-**MacOS:** the use of OpenMP with mex functions is significantly more complicated on MacOS but it is possible. The following link provides details for... clang is the only compatable compiler. In the author's experience, code compiled with clang will be significanly slower than icc. 
+**MacOS:** the use of OpenMP with mex functions is significantly more complicated on MacOS but it is possible. The following link provides details for... clang is the only compatable compiler. In the author's experience, code compiled with clang will run significanly slower than icc. 
 
 The author intends to provide a pure MATLAB code in the future for educational purposes. 
 
