@@ -25,13 +25,13 @@ Where ```Beam_3_UN_DX5mm.mat``` is the input file (created using the input modul
 
 ### Compiling
 
-The C code will need to be compiled to a mex function (MATLAB executable). MATLAB does not officially support the use of OpenMP with mex functions, but with varying degrees of complexity, it is possible on Linux, Windows and MacOS. 
+The C code needs to be compiled to a MEX function (MATLAB executable). MATLAB does not officially support the use of OpenMP with MEX functions, but with varying degrees of complexity, it is possible on Linux, Windows and MacOS (see this [link](https://uk.mathworks.com/matlabcentral/answers/237411-can-i-make-use-of-openmp-in-my-matlab-mex-files) for details).
 
 **Linux:** compiling with OpenMP is relatively simple on a Linux system using gcc.
 
 **Windows:** if you are using a Windows machine with an Intel CPU, the author recommends the use of icc (Intel C/C++ compiler). This produces highly optimised code that will run significantly faster.
 
-**MacOS:** the use of OpenMP with mex functions is significantly more complicated on MacOS but it is possible. This [link](https://stackoverflow.com/questions/37362414/openmp-with-mex-in-matlab-on-mac) provides details for modifying the default mex compiler configuration file. Clang is the only compatable compiler. In the author's experience, code compiled with clang will run significanly slower than icc. 
+**MacOS:** the use of OpenMP with MEX functions is significantly more complicated on MacOS but it is possible. This [link](https://stackoverflow.com/questions/37362414/openmp-with-mex-in-matlab-on-mac) provides details for modifying the default MEX compiler configuration file. Clang is the only compatable compiler. In the author's experience, code compiled using clang will run significanly slower than code compiled using icc. 
 
 The author intends to provide a pure MATLAB code in the future for educational purposes. 
 
@@ -47,7 +47,11 @@ All the results presented in the authors PhD thesis were generated using this co
 
 ```Input file: Beam_3_UN_DX5mm.mat```
 
-This section illustrates the simulation of an unnotched beam in three-point bending. 
+This section illustrates the simulation of an unnotched beam in three-point bending. The experimental data is from...
+
+The predicted load-CMOD response is illustrated below... Results from... have been included for comparison. 
+
+![Beam 4 Unnotched](docs/images/B4_UN.png)
 
 ## 2. mixed-mode fracture
 
