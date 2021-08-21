@@ -6,12 +6,12 @@ BB_PD is a three-dimensional bond-based peridynamics code developed in MATLAB an
 * Linear / bilinear / trilinear / non-linear constitutive models
 * Interface constitutive model
 * Contact model
-* Validated on a wide range of carefully selected experiments [1]
+* Validated on a wide range of carefully selected experiments (see references)
 * Mature explicit solver
 * Skeleton implicit solver (requires optimisation to solve non-trivial problems with 10,000+ nodes in resonable time)
 * Run simulations with 500,000+ particles 
 
-## Disclaimer
+## Attention
 
 This code was developed by **Mark Hobbs** for his PhD and has not been fully documented and tested. To understand the full capabilities of this code, please contact the author for a copy of his PhD thesis (note that this will be available online in the near future). The code has been in continuous development and best software practices were not in place, therefore, some functionality that was previously available might now be missing. The author intends to reinstate previously available functionality over the coming months. 
 
@@ -31,7 +31,7 @@ The C code will need to be compiled to a mex function (MATLAB executable). MATLA
 
 **Windows:** if you are using a Windows machine with an Intel CPU, the author recommends the use of icc (Intel C/C++ compiler). This produces highly optimised code that will run significantly faster.
 
-**MacOS:** the use of OpenMP with mex functions is significantly more complicated on MacOS but it is possible. The following link provides details for... clang is the only compatable compiler. In the author's experience, code compiled with clang will run significanly slower than icc. 
+**MacOS:** the use of OpenMP with mex functions is significantly more complicated on MacOS but it is possible. This [link](https://stackoverflow.com/questions/37362414/openmp-with-mex-in-matlab-on-mac) provides details for modifying the default mex compiler configuration file. Clang is the only compatable compiler. In the author's experience, code compiled with clang will run significanly slower than icc. 
 
 The author intends to provide a pure MATLAB code in the future for educational purposes. 
 
@@ -66,7 +66,7 @@ The code is currently not configured to run this example but the author intends 
 ![Stuttgart Shear Tests - Beam 7](docs/images/SB7_deformed.png)
 ![Stuttgart Shear Tests - Beam 7](docs/images/SB7_fracture_paths.png)
 
-## Publications
+## References
 
 M. Hobbs, Three-dimensional peridynamic modelling of quasi-brittle structural elements, Department of Engineering, University of Cambridge, 2021. PhD thesis
 
@@ -89,17 +89,6 @@ There are no plans for further extensive development of this code but the author
 
 [github.com/alan-turing-institute/PeriPy](https://github.com/alan-turing-institute/PeriPy)
 
-# Code structure
-
-## Input module
-
-## Core computational kernel
-
-```
-MAIN('Beam_4_UN_DX5mm.mat', 8)
-```
-
-## Post-processing module
 
 ## Author
 Mark Hobbs (mch61@cam.ac.uk), Department of Engineering, University of Cambridge 
