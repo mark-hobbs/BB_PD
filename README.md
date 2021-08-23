@@ -31,7 +31,7 @@ The C code needs to be compiled to a MEX function (MATLAB executable). MATLAB do
 
 **Windows:** if you are using a Windows machine with an Intel CPU, the author recommends the use of icc (Intel C/C++ compiler). This produces highly optimised code that will run significantly faster.
 
-**MacOS:** the use of OpenMP with MEX functions is significantly more complicated on MacOS but it is possible. This [link](https://stackoverflow.com/questions/37362414/openmp-with-mex-in-matlab-on-mac) provides details for modifying the default MEX compiler configuration file. Clang is the only compatable compiler. In the author's experience, code compiled using clang will run significanly slower than code compiled using icc. 
+**MacOS:** the use of OpenMP with MEX functions is significantly more complicated on MacOS but it is possible. This [link](https://stackoverflow.com/questions/37362414/openmp-with-mex-in-matlab-on-mac) provides details for modifying the default MEX compiler configuration file. Clang is the only compatable compiler, and in the author's experience, code compiled using clang will run significanly slower than code compiled using icc. 
 
 The author intends to provide a pure MATLAB code in the future for educational purposes. 
 
@@ -45,25 +45,17 @@ All the results presented in the authors PhD thesis were generated using this co
 
 ## 1. unnotched beam
 
-```Input file: Beam_3_UN_DX5mm.mat```
+```Input file: Beam_4_UN_DX1pt25mm.mat```
 
-This section illustrates the simulation of an unnotched beam in three-point bending. The experimental data is from...
-
-The predicted load-CMOD response is illustrated below... Results from... have been included for comparison. 
-
-![Beam 4 Unnotched](docs/images/B4_UN.png)
+![Beam 4 Unnotched](docs/animations/Beam_4_UN_DX1pt25mm_3D_view.gif)
 
 ## 2. mixed-mode fracture
 
-```Input file: d_80mm_e_pt625d_DX5mm.mat```
-
-This section illustrates the simulation of a mixed-mode fracture problem. The ability to accurately predict mixed-mode fracture is an important check on the validity of a numerical model. Many problems of interest (industrially motivated problems) will exhibit mixed-mode behaviour. 
+```Input file: d_80mm_e_pt625d_DX1pt25mm.mat```
 
 ![Mixed](docs/animations/d_80mm_e_pt625d_DX1pt25mm.gif)
 
-## 3. shear failure
-
-This section illustrated the simulation of a reinforced concrete beam failing in shear. 
+## 3. shear failure 
 
 The code is currently not configured to run this example but the author intends to reinstate this functionality in the near future. 
 
@@ -72,9 +64,9 @@ The code is currently not configured to run this example but the author intends 
 
 ## References
 
-M. Hobbs, Three-dimensional peridynamic modelling of quasi-brittle structural elements, Department of Engineering, University of Cambridge, 2021. PhD thesis
+Hobbs, M. (2021). *Three-dimensional peridynamic modelling of quasi-brittle structural elements*, PhD Thesis, Department of Engineering, University of Cambridge. 
 
-[Predicting shear failure in reinforced concrete members using a three-dimensional peridynamic framework](https://engrxiv.org/jhnd6/)
+Hobbs, M., Hattorri, G., & Orr, J. (2021). Predicting shear failure in reinforced concrete members using a three-dimensional peridynamic framework. [https://doi.org/10.31224/osf.io/jhnd6](https://doi.org/10.31224/osf.io/jhnd6)
 
 ## Future development
 
