@@ -79,9 +79,9 @@ There are no plans for further extensive development of this code but the author
 
 ## PeriPy
 
-[PeriPy](https://github.com/alan-turing-institute/PeriPy) provides a lightweight, open-source and high performance python package for peridynamic simulations. PeriPy utilises the heterogeneous nature of OpenCL so that it can be executed on any platform with CPU or GPU cores. PeriPy is fully documented... recommended over this repository. 
+The author is now working on the development of [PeriPy](https://github.com/alan-turing-institute/PeriPy). PeriPy provides a lightweight, open-source and high performance python package for peridynamic simulations. PeriPy utilises the heterogeneous nature of OpenCL so that it can be executed on any platform with CPU or GPU cores. PeriPy is fully tested and documented and its use is recommended over this repository. It should be noted that this code has additional functionality  over PeriPy (contact model, multiple constitutive models etc) but this functionality will be added to PeriPy in the near future.
 
-[PeriPy - A High Performance OpenCL Peridynamics Package](https://arxiv.org/abs/2105.04150)
+Boys, B., Dodwell, T. J., Hobbs, M., & Girolami, M. (2021). PeriPy - A High Performance OpenCL Peridynamics Package. arXiv preprint [arXiv:2105.04150.](https://arxiv.org/abs/2105.04150)
 
 [github.com/alan-turing-institute/PeriPy](https://github.com/alan-turing-institute/PeriPy)
 
