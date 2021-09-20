@@ -76,7 +76,7 @@ if strcmp(config.solver,'dynamic')
 
         fprintf('Start dynamic solver: displacement-controlled \n\n')
         [deformedCoordinates,fail] = dynamicsolverdisplacementcontrolled(inputdatafilename, config, nThreads, checkpointfileflag, checkpointfilename);
-
+        
     end
                
 elseif strcmp(config.solver,'static')

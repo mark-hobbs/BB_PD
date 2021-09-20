@@ -45,7 +45,7 @@ MATERIALFLAG = zeros(nNodes, 1);
 
 counter = 0;
 
-for i = 2 : 0.1 : 10
+for i = 2 : 0.01 : 5 
     
     counter = counter + 1;
     horizon = i * DX; 
