@@ -66,7 +66,8 @@ The code is currently not configured to run this example but the author intends 
 
 Hobbs, M. (2021). *Three-dimensional peridynamic modelling of quasi-brittle structural elements*, PhD Thesis, Department of Engineering, University of Cambridge. 
 
-Hobbs, M., Hattorri, G., & Orr, J. (2021). Predicting shear failure in reinforced concrete members using a three-dimensional peridynamic framework. [https://doi.org/10.31224/osf.io/jhnd6](https://doi.org/10.31224/osf.io/jhnd6)
+M. Hobbs, G. Hattori, J. Orr, Predicting shear failure in reinforced concrete members using a three-dimensional peridynamics framework, Computers & Structures 258 (2022) 106682 [doi:10.1016/j.compstruc.2021.106682](https://doi.org/10.1016/j.compstruc.2021.106682)
+
 
 ## Future development
 
@@ -81,7 +82,7 @@ There are no plans for further extensive development of this code but the author
 
 The author is now working on the development of [PeriPy](https://github.com/alan-turing-institute/PeriPy). PeriPy provides a lightweight, open-source and high performance python package for peridynamic simulations. PeriPy utilises the heterogeneous nature of OpenCL so that it can be executed on any platform with CPU or GPU cores. PeriPy is fully tested and documented and its use is recommended over this repository. It should be noted that this code has additional functionality  over PeriPy (contact model, multiple constitutive models etc) but this functionality will be added to PeriPy in the near future.
 
-Boys, B., Dodwell, T. J., Hobbs, M., & Girolami, M. (2021). PeriPy - A High Performance OpenCL Peridynamics Package. arXiv preprint [arXiv:2105.04150.](https://arxiv.org/abs/2105.04150)
+B. Boys, T. J. Dodwell, M. Hobbs, M. Girolami, PeriPy - A high performance OpenCL peridynamics package, Computer Methods in Applied Mechanics and Engineering 386 (2021) 114085. [doi:10.1016/j.cma.2021.114085.](https://doi.org/doi:10.1016/j.cma.2021.114085)
 
 [github.com/alan-turing-institute/PeriPy](https://github.com/alan-turing-institute/PeriPy)
 
