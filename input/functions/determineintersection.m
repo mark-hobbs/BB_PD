@@ -38,23 +38,23 @@ function [checkcheck] = determineintersection(A, B, C, D, nodei, nodej)
 % nodej = [0.005 0.005 0.525];
 
 % %    x  y  z
-A = [0 0 0];
-B = [0 0 1];
-C = [0.5 1 1];
-D = [0.5 1 0];
-nodei = [0.5 0.5 1.5];
-nodej = [-0.5 0.5 1.5];
-
-
-bond = [nodei; nodej];
-
-plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)] )
-hold on
-xlabel('x')
-ylabel('y')
-zlabel('Z')
-axis equal
-plot3(bond(:,1), bond(:,2), bond(:,3))
+% A = [0 0 0];
+% B = [0 0 1];
+% C = [0.5 1 1];
+% D = [0.5 1 0];
+% nodei = [0.5 0.5 1.5];
+% nodej = [-0.5 0.5 1.5];
+% 
+% 
+% bond = [nodei; nodej];
+% 
+% plot3( [A(1) B(1) C(1) D(1) A(1)], [A(2) B(2) C(2) D(2) A(2)], [A(3) B(3) C(3) D(3) A(3)] )
+% hold on
+% xlabel('x')
+% ylabel('y')
+% zlabel('Z')
+% axis equal
+% plot3(bond(:,1), bond(:,2), bond(:,3))
 
 AB = B - A;
 AC = C - A;
