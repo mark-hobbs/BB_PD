@@ -39,60 +39,26 @@ function [bondSofteningFactor, flagBondSoftening] = calculatebsftrilinear(stretc
 
 nBonds = size(BONDTYPE, 1);
 beta = 0.25;
-% eta = s1 / s0;
+eta = s1 / s0;
 
 bsf = zeros(nBonds, 1);
 
-for kBond = 1 : nBonds
-    
-    eta = s1(kBond,1) / s0; % fracture correction factors applied
-    
-    if BONDTYPE(kBond, 1) == 0
-
-        if (s0 < stretch(kBond)) && (stretch(kBond) <= s1(kBond))
-
-            bsf(kBond,1) = 1 - ( (eta - beta) / (eta - 1) * (s0 / stretch(kBond)) ) + ( (1 - beta) / (eta - 1) ); 
-            flagBondSoftening(kBond) = 1;
-            
-        elseif (s1(kBond) < stretch(kBond)) && (stretch(kBond) <= sc(kBond))
-
-            bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc(kBond) - stretch(kBond)) / (sc(kBond) - s1(kBond)) );
-            
-        elseif (stretch(kBond) > sc(kBond))
-            
-            
-            bsf(kBond,1) = 1;
-
-        end
-
-        if bsf(kBond,1) > bondSofteningFactor(kBond,1)      % Bond softening factor can only increase (damage is irreversible)
-
-            bondSofteningFactor(kBond,1) = bsf(kBond,1);
-
-        end
-        
-        
-    end
-
-end
-
-
 % for kBond = 1 : nBonds
 %     
-%     % eta = s1(kBond,1) / s0; % fracture correction factors applied
+%     eta = s1(kBond,1) / s0; % fracture correction factors applied
 %     
 %     if BONDTYPE(kBond, 1) == 0
 % 
-%         if (s0 < stretch(kBond)) && (stretch(kBond) <= s1)
+%         if (stretch(kBond) > s0) && (stretch(kBond) <= s1(kBond))
 % 
 %             bsf(kBond,1) = 1 - ( (eta - beta) / (eta - 1) * (s0 / stretch(kBond)) ) + ( (1 - beta) / (eta - 1) ); 
 %             flagBondSoftening(kBond) = 1;
 %             
-%         elseif (s1 < stretch(kBond)) && (stretch(kBond) <= sc)
+%         elseif (stretch(kBond) > s1(kBond)) && (stretch(kBond) <= sc(kBond))
 % 
-%             bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc - stretch(kBond)) / (sc - s1) );
+%             bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc(kBond) - stretch(kBond)) / (sc(kBond) - s1(kBond)) );
 %             
-%         elseif (stretch(kBond) > sc)
+%         elseif (stretch(kBond) > sc(kBond))
 %             
 %             
 %             bsf(kBond,1) = 1;
@@ -109,6 +75,38 @@ end
 %     end
 % 
 % end
+
+
+for kBond = 1 : nBonds
+        
+    if BONDTYPE(kBond, 1) == 0
+
+        if (stretch(kBond) > s0) && (stretch(kBond) <= s1)
+
+            bsf(kBond,1) = 1 - ( (eta - beta) / (eta - 1) * (s0 / stretch(kBond)) ) + ( (1 - beta) / (eta - 1) ); 
+            flagBondSoftening(kBond) = 1;
+            
+        elseif (stretch(kBond) > s1) && (stretch(kBond) <= sc)
+
+            bsf(kBond,1) = 1 - ( (s0 * beta) / stretch(kBond) ) * ( (sc - stretch(kBond)) / (sc - s1) );
+            
+        elseif (stretch(kBond) > sc)
+            
+            
+            bsf(kBond,1) = 1;
+
+        end
+
+        if bsf(kBond,1) > bondSofteningFactor(kBond,1)      % Bond softening factor can only increase (damage is irreversible)
+
+            bondSofteningFactor(kBond,1) = bsf(kBond,1);
+
+        end
+        
+        
+    end
+
+end
 
 
 bondSofteningFactor(isnan(bondSofteningFactor)) = 0;                            % if value is nan, replace with 0
