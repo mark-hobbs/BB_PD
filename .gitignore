@@ -22,6 +22,7 @@ input/inputdatafiles
 
 *.mexw64
 *.mexmaci64
+*.mexa64
 *.asv
 *.DS_store
 

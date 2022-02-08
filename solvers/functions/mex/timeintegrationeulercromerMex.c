@@ -29,7 +29,7 @@ void timeintegrationeulercromer(double *nodalAcceleration, double *nodalForce, d
     int kNode, dof;
 
     
-    #pragma omp parallel for default(none) shared(nNodes, dof, NOD, DT, nodalAcceleration, nodalForce, DAMPING, nodalVelocity, DENSITY, constraintFlag, nodalDisplacement, deformedCoordinates, undeformedCoordinates) private(kNode)
+    #pragma omp parallel for default(none) shared(nNodes, NOD, DT, nodalAcceleration, nodalForce, DAMPING, nodalVelocity, DENSITY, constraintFlag, nodalDisplacement, deformedCoordinates, undeformedCoordinates) private(kNode, dof)
     for(kNode = 0; kNode < nNodes; kNode++)
     {
         for(dof = 0; dof < NOD; dof++)
