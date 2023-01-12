@@ -8,12 +8,12 @@ BB_PD is a three-dimensional bond-based peridynamics code developed in MATLAB an
 * Contact model
 * Validated on a wide range of carefully selected experiments (see references)
 * Mature explicit solver
-* Skeleton implicit solver (requires optimisation to solve non-trivial problems with 10,000+ nodes in resonable time)
+* Skeleton implicit solver (requires optimisation to solve non-trivial problems with 10,000+ nodes in reasonable time)
 * Run simulations with 500,000+ particles 
 
 ## Attention
 
-This code was developed by **Mark Hobbs** for his PhD and has not been fully documented and tested. To understand the full capabilities of this code, please contact the author for a copy of his PhD thesis (note that this will be available online in the near future). The code has been in continuous development and best software practices were not in place, therefore, some functionality that was previously available might now be missing. The author intends to reinstate previously available functionality over the coming months. 
+This code was developed by **Mark Hobbs** for his PhD and has not been fully documented and tested. To understand the full capabilities of this code, please refer to the authors PhD thesis ([doi.org/10.17863/CAM.78179](https://doi.org/10.17863/CAM.78179)). The code has been in continuous development and best software practices were not in place, therefore, some functionality that was previously available might now be missing. The author intends to reinstate previously available functionality over the coming months. 
 
 ## Getting started
 
