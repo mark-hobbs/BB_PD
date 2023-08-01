@@ -68,7 +68,7 @@ Hobbs, M. (2021). *Three-dimensional peridynamic modelling of quasi-brittle stru
 
 M. Hobbs, G. Hattori, J. Orr, Predicting shear failure in reinforced concrete members using a three-dimensional peridynamics framework, Computers & Structures 258 (2022) 106682. [doi:10.1016/j.compstruc.2021.106682](https://doi.org/10.1016/j.compstruc.2021.106682)
 
-M. Hobbs, T. Dodwell, G. Hattori, and J. Orr, An examination of the size effect in quasi-brittle materials using a bond-based peridynamic model (2022) [doi:10.31224/osf.io/u6vnc](https://doi.org/10.31224/osf.io/u6vnc)
+M. Hobbs, T. Dodwell, G. Hattori, and J. Orr, An examination of the size effect in quasi-brittle materials using a bond-based peridynamic model, Engineering Structures 262 (2022) 114207. [doi:10.1016/j.engstruct.2022.114207](https://doi.org/10.1016/j.engstruct.2022.114207)
 
 
 ## Future development
